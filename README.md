@@ -19,8 +19,6 @@ cd mood-song-share
 npm install
 ```
 
-＝＝＝完了＝＝＝
-
 ---
 
 ## 1.2 Tailwind CSS 設定
