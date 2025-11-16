@@ -1,0 +1,31 @@
+{
+  "name": "mood-song-share",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "web",
+  "workspaceFolder": "/app",
+  "remoteUser": "root",
+  "overrideCommand": true,
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "bradlc.vscode-tailwindcss",
+        "eamodio.gitlens"
+      ],
+      "settings": {
+        // 保存時にフォーマット（Prettier）
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+        // ESLint 自動修正
+        "eslint.format.enable": true,
+        "eslint.lintTask.enable": true,
+
+        // Tailwind補完強化
+        "tailwindCSS.emmetCompletions": true
+      }
+    }
+  }
+}
