@@ -15,15 +15,12 @@
         "eamodio.gitlens"
       ],
       "settings": {
-        // 保存時にフォーマット（Prettier）
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
 
-        // ESLint 自動修正
         "eslint.format.enable": true,
         "eslint.lintTask.enable": true,
 
-        // Tailwind補完強化
         "tailwindCSS.emmetCompletions": true
       }
     }
