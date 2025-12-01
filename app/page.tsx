@@ -1,6 +1,20 @@
 import Image from "next/image";
+import { createClient } from "@/lib/supabaseClient";
 
-export default function Home() {
+type User = {
+  id: string
+  name: string
+  email: string | null
+  created_at: string
+}
+
+export default async function Home() {
+  const supabase = await createClient();
+
+  const { data: users, error } = await supabase.from("users").select("*");
+  console.log("check users:", users);
+  console.log("check error:", error);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -14,8 +28,17 @@ export default function Home() {
         />
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
           <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            この文字列を適当に修正して保存してください。
-            保存するだけで修正内容がサイトに反映されたらホットリロードが有効になっています。
+          <div>
+            <h1>Users</h1>
+            <ul>
+              {users?.map(user => (
+                <li key={user.id}>
+                  {user.name} ({user.email ?? 'no email'})
+                </li>
+              ))}
+            </ul>
+            <h1>test</h1>
+          </div>
           </h1>
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             Looking for a starting point or more instructions? Head over to{" "}
