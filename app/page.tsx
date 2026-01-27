@@ -11,8 +11,6 @@ export default function HomePage() {
     <main className="p-6">
       <h1 className="text-xl font-bold">Home</h1>
       <pre>{JSON.stringify(user, null, 2)}</pre>
-
-      <button onClick={() => supabase.auth.signOut()}>ログアウト</button>
     </main>
   );
 }
