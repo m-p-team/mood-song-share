@@ -1,29 +1,18 @@
-import { supabase } from "./lib/supabaseClient";
+"use client";
 
-export default async function HomePage() {
-  const { data: posts, error } = await supabase
-    .from("posts")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(10);
+import { useSupabaseUser } from "./lib/useSupabaseUser";
 
-  if (error) {
-    return <pre>{JSON.stringify(error, null, 2)}</pre>;
-  }
+export default function HomePage() {
+  const { user, loading } = useSupabaseUser();
+
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <main className="p-6 space-y-4">
-      <h1 className="text-xl font-bold">投稿一覧</h1>
+    <main className="p-6">
+      <h1 className="text-xl font-bold">Home</h1>
+      <pre>{JSON.stringify(user, null, 2)}</pre>
 
-      {posts?.map((post) => (
-        <div key={post.id} className="border rounded p-4 space-y-1">
-          <div>🎵 {post.video_title}</div>
-          <div>😊 気分： {post.mood}</div>
-          <div className="text-xs text-gray-500">
-            {new Date(post.created_at).toLocaleString()}
-          </div>
-        </div>
-      ))}
+      <button onClick={() => supabase.auth.signOut()}>ログアウト</button>
     </main>
   );
 }
