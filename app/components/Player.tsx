@@ -14,16 +14,37 @@ export default function Player({ videoId }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const [isEnd, setIsEnd] = useState(false);
 
   // プレイヤー準備完了
   const onReady = (event: YouTubeEvent) => {
     playerRef.current = event.target;
+
+    const interval = setInterval(() => {
+      const duration = event.target.getDuration();
+      if (duration > 0) {
+        setDuration(duration);
+        clearInterval(interval);
+      }
+    }, 200);
+
+    event.target.playVideo();
   };
 
   const onStateChange = (event: YouTubeEvent) => {
+    // 0 = ENDED
+    if (event.data === 0) {
+      setCurrentTime(duration);
+      setIsEnd(true);
+      setIsPlaying(false);
+    }
     // 1 = PLAYING
     if (event.data === 1) {
-      const duration = event.target.getDuration();
+      setIsEnd(false);
+      setIsPlaying(true);
+    }
+
+    if (event.data === 3) {
       setDuration(duration);
     }
   };
@@ -55,8 +76,15 @@ export default function Player({ videoId }: Props) {
   // バーを動かしたとき
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = Number(e.target.value);
-    setCurrentTime(time);
     playerRef.current?.seekTo(time);
+  };
+
+  // 秒 → 分:秒 に変換
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+
+    return `${minutes}:${seconds!.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -74,7 +102,7 @@ export default function Player({ videoId }: Props) {
 
       {/* 再生ボタン */}
       <button onClick={togglePlay} style={styles.button}>
-        {isPlaying ? "⏸" : "▶"}
+        {isPlaying ? (isEnd ? "▶" : "⏸") : "▶"}
       </button>
 
       {/* 再生バー */}
@@ -94,13 +122,6 @@ export default function Player({ videoId }: Props) {
       </div>
     </div>
   );
-}
-
-// 秒 → 分:秒 に変換
-function formatTime(time: number) {
-  const minutes = Math.floor(time / 60);
-  const seconds = Math.floor(time % 60);
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 const styles: Record<string, React.CSSProperties> = {
