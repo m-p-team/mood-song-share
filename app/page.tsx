@@ -1,4 +1,5 @@
 import { getPosts } from "@/app/lib/postService";
+import LikeButton from "@/app/components/LikeButton";
 import Link from "next/link";
 
 export default async function HomePage() {
@@ -33,18 +34,24 @@ export default async function HomePage() {
             src={`https://www.youtube.com/embed/${post.video_id}`}
             allowFullScreen
           />
-          <a
-            href={post.video_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-600 underline"
-          >
-            YouTubeで見る →
-          </a>
+          <div className="flex justify-between">
+            <div>
+              <a
+                href={post.video_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-600 underline"
+              >
+                YouTubeで見る →
+              </a>
 
-          <p className="text-xs text-gray-400">
-            {new Date(post.created_at).toLocaleString()}
-          </p>
+              <p className="text-xs text-gray-400">
+                {new Date(post.created_at).toLocaleString()}
+              </p>
+            </div>
+
+            <LikeButton postId={post.id} />
+          </div>
         </div>
       ))}
     </main>
