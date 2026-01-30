@@ -1,6 +1,8 @@
 import { getPostById } from "@/app/lib/postService";
 import MoodBadge from "@/app/components/MoodBadge";
 import ExternalLink from "@/app/components/ExternalLink";
+import Player from "@/app/components/Player";
+import Image from "next/image";
 
 type Props = {
   params: Promise<{
@@ -18,13 +20,15 @@ export default async function PostDetailPage({ params }: Props) {
       <div className="text-sm text-gray-500">
         <MoodBadge mood={post.mood} />
       </div>
-      <div className="aspect-video">
-        <iframe
-          className="w-full h-full rounded-lg"
-          src={`https://www.youtube.com/embed/${post.video_id}`}
-          allowFullScreen
+      <div className="aspect-video rounded-full">
+        <Image
+          src={`https://img.youtube.com/vi/${post.video_id}/maxresdefault.jpg`}
+          alt="thumbnail"
+          width={800}
+          height={450}
         />
       </div>
+      <Player videoId={`${post.video_id}`} />;
       <ExternalLink url={post.video_url} />
       <div className="text-xs text-gray-400">
         投稿日: {new Date(post.created_at).toLocaleString()}
