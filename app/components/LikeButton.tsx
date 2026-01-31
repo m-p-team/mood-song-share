@@ -4,6 +4,7 @@ import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Heart } from "lucide-react";
 
 type Props = {
   postId: string;
@@ -80,7 +81,19 @@ export default function LikeButton({ postId }: Props) {
 
   return (
     <button onClick={handleClick} disabled={saving} className="cursor-pointer">
-      <span>{liked ? "❤️" : "🤍"}</span>
+      <span>
+        {liked ? (
+          <Heart
+            size={30}
+            color="red"
+            fill="red"
+            strokeWidth={2}
+            className="inline-block"
+          />
+        ) : (
+          <Heart size={30} strokeWidth={2} className="inline-block" />
+        )}
+      </span>
       <span className="text-sm"> {likeCount}</span>
     </button>
   );
