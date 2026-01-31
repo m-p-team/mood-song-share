@@ -2,9 +2,11 @@
 
 import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const { user, loading } = useSupabaseUser();
+  const router = useRouter();
 
   return (
     <header className="flex items-center justify-between p-4 border-b">
@@ -24,7 +26,12 @@ export default function Header() {
               </button>
             </div>
           ) : (
-            <span className="text-sm text-gray-500">未ログイン</span>
+            <button
+              onClick={() => router.push("/login")}
+              className="px-3 py-1 text-sm border rounded"
+            >
+              ログイン
+            </button>
           )}
         </>
       )}
