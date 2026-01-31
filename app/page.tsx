@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getPosts } from "@/app/lib/postService";
 import LikeButton from "@/app/components/LikeButton";
 import Link from "next/link";

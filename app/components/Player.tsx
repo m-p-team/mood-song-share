@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import YouTube from "react-youtube";
+import { Play, Pause } from "lucide-react";
 
 type Props = {
   videoId: string;
@@ -47,7 +48,7 @@ export default function Player({ videoId }: Props) {
       setIsEnd(false);
       setIsPlaying(true);
     }
-
+    // 3 = BUFFERING
     if (event.data === 3) {
       setDuration(duration);
     }
@@ -80,6 +81,7 @@ export default function Player({ videoId }: Props) {
   // バーを動かしたとき
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = Number(e.target.value);
+    setCurrentTime(time);
     playerRef.current?.seekTo(time, true);
   };
 
@@ -92,7 +94,7 @@ export default function Player({ videoId }: Props) {
   };
 
   return (
-    <div style={styles.container}>
+    <div className="flex flex-col items-center mt-10 gap-4">
       <YouTube
         videoId={videoId}
         onReady={onReady}
@@ -105,8 +107,19 @@ export default function Player({ videoId }: Props) {
       />
 
       {/* 再生ボタン */}
-      <button onClick={togglePlay} style={styles.button}>
-        {isPlaying ? (isEnd ? "▶" : "⏸") : "▶"}
+      <button
+        onClick={togglePlay}
+        className="w-20 h-20 rounded-full bg-white text-3xl flex items-center justify-center shadow-xl"
+      >
+        {isPlaying ? (
+          isEnd ? (
+            <Play size={32} color="black" />
+          ) : (
+            <Pause size={32} color="black" />
+          )
+        ) : (
+          <Play size={32} color="black" />
+        )}
       </button>
 
       {/* 再生バー */}
@@ -116,42 +129,14 @@ export default function Player({ videoId }: Props) {
         max={duration}
         value={currentTime}
         onChange={handleSeek}
-        style={styles.slider}
+        className="w-[300px] accent-gray-300"
       />
 
       {/* 時間表示 */}
-      <div style={styles.time}>
+      <div className="w-[300px] flex justify-between text-sm">
         <span>{formatTime(currentTime)}</span>
         <span>{formatTime(duration)}</span>
       </div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    marginTop: "40px",
-    gap: "16px",
-  },
-  button: {
-    width: "80px",
-    height: "80px",
-    borderRadius: "50%",
-    border: "none",
-    fontSize: "32px",
-    background: "white",
-    cursor: "pointer",
-  },
-  slider: {
-    width: "300px",
-  },
-  time: {
-    width: "300px",
-    display: "flex",
-    justifyContent: "space-between",
-    fontSize: "14px",
-  },
-};
