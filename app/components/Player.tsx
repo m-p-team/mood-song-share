@@ -1,15 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import YouTube, { YouTubeEvent } from "react-youtube";
-import type { YouTubePlayer } from "react-youtube";
+import YouTube from "react-youtube";
 
 type Props = {
   videoId: string;
 };
 
+type YouTubeEvent = {
+  target: YT.Player;
+  data: number;
+};
+
 export default function Player({ videoId }: Props) {
-  const playerRef = useRef<YouTubePlayer | null>(null);
+  const playerRef = useRef<YT.Player | null>(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -76,7 +80,7 @@ export default function Player({ videoId }: Props) {
   // バーを動かしたとき
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = Number(e.target.value);
-    playerRef.current?.seekTo(time);
+    playerRef.current?.seekTo(time, true);
   };
 
   // 秒 → 分:秒 に変換
