@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { useRouter } from "next/navigation";
@@ -10,7 +12,10 @@ export default function Header() {
 
   return (
     <header className="flex items-center justify-between p-4 border-b">
-      <h1 className="font-bold">Mood Song Share</h1>
+      <Link href="/" className="flex items-center gap-2">
+        <Image src="/logo.png" alt="V-Tuune" width={32} height={32} />
+        <h1 className="font-bold">V-Tuune</h1>
+      </Link>
 
       {!loading && (
         <>
