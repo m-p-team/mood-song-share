@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { getPosts } from "@/app/lib/postService";
 import LikeButton from "@/app/components/LikeButton";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 
 export default async function HomePage() {
   const posts = await getPosts();
@@ -56,6 +57,12 @@ export default async function HomePage() {
           </div>
         </div>
       ))}
+      <Link
+        href="/post"
+        className="fixed bottom-6 right-6 w-20 h-20 rounded-full bg-white text-3xl flex items-center justify-center shadow-xl hover:scale-105"
+      >
+        <Plus size={32} color="black" />
+      </Link>
     </main>
   );
 }
