@@ -9,7 +9,7 @@ export default async function HomePage() {
   const posts = await getPosts();
 
   return (
-    <main className="p-6 space-y-6">
+    <main className="max-w-3xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold">🎵 投稿一覧</h1>
 
       {posts.length === 0 && (
