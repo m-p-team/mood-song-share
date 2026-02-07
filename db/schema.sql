@@ -275,3 +275,15 @@ alter default privileges in schema prod
 grant select, insert, update, delete
 on tables
 to anon, authenticated;
+
+-- dev
+create policy "Users can delete own posts"
+on dev.posts
+for delete
+using (auth.uid() = user_id);
+
+-- prod
+create policy "Users can delete own posts"
+on prod.posts
+for delete
+using (auth.uid() = user_id);

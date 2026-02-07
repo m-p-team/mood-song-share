@@ -21,8 +21,6 @@ export default function Header() {
         <>
           {user ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm">{user.email}</span>
-
               <button
                 onClick={() => supabase.auth.signOut()}
                 className="px-3 py-1 text-sm border rounded"

@@ -11,7 +11,17 @@ export async function getPosts() {
     throw new Error("投稿一覧の取得に失敗しました");
   }
 
-  return data;
+  return data.map((post) => ({
+    ...post,
+    created_at_jst: new Date(post.created_at).toLocaleString("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  }));
 }
 
 export async function getPostById(id: string) {
