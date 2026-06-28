@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
+import { MOODS } from "@/app/lib/moods";
+import toast from "react-hot-toast";
 
 export default function EditPostPage() {
   const router = useRouter();
@@ -29,7 +31,7 @@ export default function EditPostPage() {
         .single();
 
       if (error || !data) {
-        alert("投稿が見つかりません");
+        toast.error("投稿が見つかりません");
         router.replace("/");
         return;
       }
@@ -71,7 +73,7 @@ export default function EditPostPage() {
     setSaving(false);
 
     if (error) {
-      alert("更新に失敗しました");
+      toast.error("更新に失敗しました");
       console.error(error);
       return;
     }
@@ -96,12 +98,22 @@ export default function EditPostPage() {
 
         <div>
           <label className="block text-sm mb-1">今日の気分</label>
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={mood}
-            onChange={(e) => setMood(e.target.value)}
-            required
-          />
+          <div className="flex flex-wrap gap-2">
+            {MOODS.map(({ label, emoji }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setMood(label)}
+                className={`px-3 py-1.5 rounded-full border text-sm transition ${
+                  mood === label
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-blue-400"
+                }`}
+              >
+                {emoji} {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="my-5">

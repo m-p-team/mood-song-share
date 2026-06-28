@@ -12,7 +12,8 @@
         "esbenp.prettier-vscode",
         "ms-azuretools.vscode-docker",
         "bradlc.vscode-tailwindcss",
-        "eamodio.gitlens"
+        "eamodio.gitlens",
+        "anthropic.claude-code"
       ],
       "settings": {
         "editor.formatOnSave": true,

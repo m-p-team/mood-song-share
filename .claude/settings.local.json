@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm cache *)",
+      "Bash(npx tsc *)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(node -e \"const http=require\\('http'\\);http.get\\('http://localhost:3000',\\(r\\)=>console.log\\(r.statusCode\\)\\).on\\('error',e=>console.log\\('err:'+e.message\\)\\)\")",
+      "Bash(npx playwright *)",
+      "Bash(node -e ' *)",
+      "Bash(npm install *)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(pkill -9 -f \"next\")",
+      "Bash(fuser -k 3000/tcp)",
+      "Read(//tmp/**)",
+      "Bash(pkill -9 -f \"next\" 2>/dev/null; rm -f /app/.next/dev/lock; sleep 2; npm run dev > /tmp/nextdev.log 2>&1 & *)",
+      "Bash(grep -v \"^$\")",
+      "Bash(npm --prefix /app run dev)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  }
+}
