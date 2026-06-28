@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import LikeButton from "@/app/components/LikeButton";
@@ -8,7 +8,8 @@ import PostMenu from "@/app/components/PostMenu";
 import ConfirmDeleteModal from "@/app/components/ConfirmDeleteModal";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { supabase } from "@/app/lib/supabaseClient";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
 
 type Post = {
   id: string;
@@ -29,6 +30,20 @@ export default function HomePageClient({ posts }: Props) {
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
 
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const hasShownToast = useRef(false);
+
+  useEffect(() => {
+    const toastType = searchParams.get("toast");
+
+    if (toastType === "forbidden" && !hasShownToast.current) {
+      hasShownToast.current = true;
+      toast.error("この投稿を編集する権限がありません");
+      router.replace(pathname);
+    }
+  }, [searchParams, router, pathname]);
 
   const handleDelete = async () => {
     if (!deletePostId) return;
