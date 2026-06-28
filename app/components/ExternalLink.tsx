@@ -1,4 +1,4 @@
-"use client";
+import { ExternalLink as ExternalLinkIcon } from "lucide-react";
 
 type Props = {
   url: string;
@@ -6,14 +6,14 @@ type Props = {
 
 export default function ExternalLink({ url }: Props) {
   return (
-    <span
-      onClick={(e) => {
-        e.stopPropagation();
-        window.open(url, "_blank");
-      }}
-      className="text-blue-500 underline cursor-pointer"
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-800 transition-colors"
     >
       YouTubeで開く
-    </span>
+      <ExternalLinkIcon size={14} />
+    </a>
   );
 }

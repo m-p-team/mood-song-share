@@ -3,6 +3,9 @@ import MoodBadge from "@/app/components/MoodBadge";
 import ExternalLink from "@/app/components/ExternalLink";
 import Player from "@/app/components/Player";
 import Thumbnail from "@/app/components/Thumbnail";
+import LikeButton from "@/app/components/LikeButton";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 type Props = {
   params: Promise<{
@@ -15,19 +18,46 @@ export default async function PostDetailPage({ params }: Props) {
   const post = await getPostById(id);
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">{post.video_title}</h1>
-      <div className="text-sm text-gray-500">
-        <MoodBadge mood={post.mood} />
+    <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+      {/* Back */}
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-violet-600 transition-colors"
+      >
+        <ArrowLeft size={16} />
+        戻る
+      </Link>
+
+      {/* Card */}
+      <div className="bg-white rounded-2xl border border-violet-100 shadow-sm overflow-hidden">
+        {/* Thumbnail */}
+        <div className="rounded-none overflow-hidden">
+          <Thumbnail videoId={`${post.video_id}`} />
+        </div>
+
+        <div className="p-5 space-y-4">
+          {/* Title & mood */}
+          <div className="space-y-2">
+            <h1 className="text-xl font-bold text-slate-800 leading-snug">
+              {post.video_title}
+            </h1>
+            <MoodBadge mood={post.mood} />
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-between pt-1">
+            <ExternalLink url={post.video_url} />
+            <LikeButton postId={post.id} />
+          </div>
+
+          <p className="text-xs text-slate-400">
+            投稿日: {new Date(post.created_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
+          </p>
+        </div>
       </div>
-      <div className="aspect-video rounded-full">
-        <Thumbnail videoId={`${post.video_id}`} />
-      </div>
-      <Player videoId={`${post.video_id}`} />
-      <ExternalLink url={post.video_url} />
-      <div className="text-xs text-gray-400">
-        投稿日: {new Date(post.created_at).toLocaleString()}
-      </div>
+
+      {/* Player */}
+      <Player videoId={`${post.video_id}`} mood={post.mood} />
     </div>
   );
 }

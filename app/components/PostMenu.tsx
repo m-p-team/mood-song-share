@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Ellipsis, Trash2, Pencil, Share2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 type Props = {
   postId: string;
@@ -40,7 +41,7 @@ export default function PostMenu({
         });
       } else {
         await navigator.clipboard.writeText(shareUrl);
-        alert("URLをコピーしました");
+        toast.success("URLをコピーしました");
       }
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name !== "AbortError") {

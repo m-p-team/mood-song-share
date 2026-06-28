@@ -7,7 +7,7 @@ type Props = {
   videoId: string;
 };
 
-export default function Player({ videoId }: Props) {
+export default function Thumbnail({ videoId }: Props) {
   const [src, setSrc] = useState(
     `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
   );

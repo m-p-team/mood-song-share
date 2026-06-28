@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
+import { MOODS } from "@/app/lib/moods";
+import { ArrowLeft, Link2, Music } from "lucide-react";
+import Link from "next/link";
 
 export default function PostPage() {
   const router = useRouter();
@@ -15,14 +18,28 @@ export default function PostPage() {
   const [videoId, setVideoId] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // ログインチェック
   if (!loading && !user) {
-    return <p className="p-6">ログインしてください。</p>;
+    return (
+      <main className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-violet-100 flex items-center justify-center">
+          <Music size={28} className="text-violet-500" />
+        </div>
+        <p className="text-slate-600 font-medium">投稿するにはログインが必要です</p>
+        <Link
+          href="/login"
+          className="px-5 py-2.5 rounded-full bg-linear-to-r from-violet-600 to-purple-500 text-white text-sm font-medium shadow-sm hover:opacity-90 transition-all"
+        >
+          ログインする
+        </Link>
+      </main>
+    );
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
+
+    if (!mood) return;
 
     setSaving(true);
 
@@ -37,7 +54,6 @@ export default function PostPage() {
     setSaving(false);
 
     if (error) {
-      alert("保存に失敗しました");
       console.error(error);
       return;
     }
@@ -53,65 +69,102 @@ export default function PostPage() {
   }
 
   return (
-    <main className="p-6 max-w-xl">
-      <h1 className="text-xl font-bold mb-4">投稿する</h1>
+    <main className="max-w-xl mx-auto px-4 py-6">
+      {/* Back */}
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-violet-600 transition-colors mb-5"
+      >
+        <ArrowLeft size={16} />
+        戻る
+      </Link>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm mb-1">タイトル</label>
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="今日の1曲"
-            required
-          />
+      <div className="bg-white rounded-2xl border border-violet-100 shadow-sm overflow-hidden">
+        <div className="bg-linear-to-r from-violet-600 to-purple-500 px-6 py-5">
+          <h1 className="text-xl font-bold text-white">投稿する</h1>
+          <p className="text-violet-200 text-sm mt-0.5">今日の1曲をシェアしよう</p>
         </div>
 
-        <div>
-          <label className="block text-sm mb-1">今日の気分</label>
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={mood}
-            onChange={(e) => setMood(e.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm mb-1">YouTube URL</label>
-          <input
-            className="w-full border px-3 py-2 rounded"
-            value={videoUrl}
-            onChange={(e) => {
-              const url = e.target.value;
-              setVideoUrl(url);
-              setVideoId(extractYouTubeId(url));
-            }}
-            placeholder="https://www.youtube.com/watch?v=..."
-            required
-          />
-        </div>
-
-        {videoId && (
-          <div className="mt-4">
-            <p className="text-sm text-gray-500 mb-1">プレビュー</p>
-            <iframe
-              className="w-full rounded"
-              height="220"
-              src={`https://www.youtube.com/embed/${videoId}`}
-              allowFullScreen
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* Title */}
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">タイトル</label>
+            <input
+              className="w-full border border-slate-200 px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-transparent transition-all placeholder-slate-400"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="今日の1曲"
+              required
             />
           </div>
-        )}
 
-        <button
-          disabled={saving}
-          className="px-4 py-2 bg-black text-white rounded disabled:opacity-50"
-        >
-          {saving ? "保存中..." : "投稿する"}
-        </button>
-      </form>
+          {/* Mood */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-slate-700">
+              今日の気分
+              {!mood && <span className="ml-1 text-xs text-rose-400">（必須）</span>}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {MOODS.map(({ label, emoji, color }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => setMood(label)}
+                  className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-all ${
+                    mood === label
+                      ? `${color} ring-2 ring-offset-1 ring-violet-400 scale-105`
+                      : "bg-white text-slate-600 border-slate-200 hover:border-violet-300"
+                  }`}
+                >
+                  {emoji} {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* YouTube URL */}
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-700">YouTube URL</label>
+            <div className="relative">
+              <Link2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                className="w-full border border-slate-200 pl-9 pr-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-transparent transition-all placeholder-slate-400"
+                value={videoUrl}
+                onChange={(e) => {
+                  const url = e.target.value;
+                  setVideoUrl(url);
+                  setVideoId(extractYouTubeId(url));
+                }}
+                placeholder="https://www.youtube.com/watch?v=..."
+                required
+              />
+            </div>
+          </div>
+
+          {/* Preview */}
+          {videoId && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-slate-700">プレビュー</p>
+              <div className="rounded-xl overflow-hidden border border-violet-100">
+                <iframe
+                  className="w-full"
+                  height="220"
+                  src={`https://www.youtube.com/embed/${videoId}`}
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
+
+          <button
+            disabled={saving || !mood}
+            type="submit"
+            className="w-full py-3 rounded-xl font-medium text-sm text-white bg-linear-to-r from-violet-600 to-purple-500 disabled:opacity-50 hover:opacity-90 transition-all shadow-sm"
+          >
+            {saving ? "投稿中..." : "投稿する"}
+          </button>
+        </form>
+      </div>
     </main>
   );
 }
