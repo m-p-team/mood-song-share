@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Search, PlusCircle, User } from "lucide-react";
+import { Home, Search, PlusCircle, User, MessageSquare } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 
@@ -16,6 +16,7 @@ export default function BottomNav() {
     { href: "/", icon: Home, label: "ホーム" },
     { href: "/search", icon: Search, label: "検索" },
     { href: "/post", icon: PlusCircle, label: "投稿" },
+    { href: "/messages", icon: MessageSquare, label: "DM" },
     { href: user ? `/profile/${user.id}` : "/login", icon: User, label: "プロフィール" },
   ];
 

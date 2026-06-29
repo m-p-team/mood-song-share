@@ -5,6 +5,9 @@ import ExternalLink from "@/app/components/ExternalLink";
 import Player from "@/app/components/Player";
 import Thumbnail from "@/app/components/Thumbnail";
 import LikeButton from "@/app/components/LikeButton";
+import CommentSection from "@/app/components/CommentSection";
+import LikersList from "@/app/components/LikersList";
+import { AddToPlaylistButton } from "@/app/components/PlaylistSection";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
@@ -81,13 +84,24 @@ export default async function PostDetailPage({ params }: Props) {
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-1 border-t border-slate-50">
-            <ExternalLink url={post.video_url} />
+            <div className="flex items-center gap-3">
+              <ExternalLink url={post.video_url} />
+              <AddToPlaylistButton postId={post.id} />
+            </div>
             <LikeButton postId={post.id} />
           </div>
+
+          {/* Who liked */}
+          <LikersList postId={post.id} />
 
           <p className="text-xs text-slate-400">
             投稿日: {new Date(post.created_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
           </p>
+
+          {/* Comments */}
+          <div className="pt-2 border-t border-slate-100">
+            <CommentSection postId={post.id} />
+          </div>
         </div>
       </div>
 

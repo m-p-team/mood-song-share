@@ -13,7 +13,7 @@ export default function ExternalLink({ url }: Props) {
       className="inline-flex items-center gap-1.5 text-sm font-medium text-violet-600 hover:text-violet-800 transition-colors"
     >
       YouTubeで開く
-      <ExternalLinkIcon size={14} />
+      <ExternalLinkIcon size={13} strokeWidth={2} />
     </a>
   );
 }
