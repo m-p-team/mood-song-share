@@ -418,3 +418,80 @@ export async function removeFromPlaylist(playlistId: string, postId: string) {
 
   if (error) throw error;
 }
+
+// ---------- Notifications ----------
+
+export type NotificationType = "like" | "comment" | "dm" | "follow";
+
+export type NotificationRecord = {
+  id: string;
+  user_id: string;
+  actor_id: string;
+  type: NotificationType;
+  post_id: string | null;
+  read_at: string | null;
+  created_at: string;
+  created_at_jst: string;
+  actor: { id: string; name: string | null; avatar_url: string | null } | null;
+  posts: { id: string; video_title: string } | null;
+};
+
+export type NotificationSettings = {
+  user_id: string;
+  likes_enabled: boolean;
+  comments_enabled: boolean;
+  dms_enabled: boolean;
+  follows_enabled: boolean;
+  desktop_enabled: boolean;
+};
+
+export async function getNotifications(userId: string): Promise<NotificationRecord[]> {
+  const { data, error } = await supabase
+    .from("notifications")
+    .select("*, actor:users!actor_id(id, name, avatar_url), posts!post_id(id, video_title)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return (data ?? []).map((n) => ({
+    ...n,
+    created_at_jst: formatJst(n.created_at),
+  })) as NotificationRecord[];
+}
+
+export async function markAllNotificationsRead(userId: string) {
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("user_id", userId)
+    .is("read_at", null);
+}
+
+export async function getNotificationSettings(userId: string): Promise<NotificationSettings | null> {
+  const { data } = await supabase
+    .from("notification_settings")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  return data as NotificationSettings | null;
+}
+
+export async function upsertNotificationSettings(
+  userId: string,
+  settings: Partial<Omit<NotificationSettings, "user_id">>
+) {
+  const { error } = await supabase
+    .from("notification_settings")
+    .upsert(
+      { user_id: userId, ...settings, updated_at: new Date().toISOString() },
+      { onConflict: "user_id" }
+    );
+
+  if (error) throw error;
+}

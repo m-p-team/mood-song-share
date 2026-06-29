@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Search, LogOut, User } from "lucide-react";
+import { Search, LogOut, User, Bell, MessageSquare } from "lucide-react";
 import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
+import { useNotifications } from "@/app/lib/useNotifications";
 import { useRouter } from "next/navigation";
 
 export default function Header() {
   const { user, loading } = useSupabaseUser();
   const router = useRouter();
+  const { unreadCount } = useNotifications(user?.id ?? null);
 
   return (
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-violet-100 shadow-sm">
@@ -41,6 +43,29 @@ export default function Header() {
             <>
               {user ? (
                 <div className="flex items-center gap-1">
+                  {/* Notification bell */}
+                  <Link
+                    href="/notifications"
+                    className="relative w-9 h-9 flex items-center justify-center rounded-full text-slate-500 hover:text-violet-600 hover:bg-violet-50 transition-all"
+                    aria-label="通知"
+                  >
+                    <Bell size={19} />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+
+                  {/* DM (desktop only — mobile uses BottomNav) */}
+                  <Link
+                    href="/messages"
+                    className="hidden sm:flex w-9 h-9 items-center justify-center rounded-full text-slate-500 hover:text-violet-600 hover:bg-violet-50 transition-all"
+                    aria-label="メッセージ"
+                  >
+                    <MessageSquare size={19} />
+                  </Link>
+
                   <Link
                     href={`/profile/${user.id}`}
                     className="w-9 h-9 flex items-center justify-center rounded-full text-slate-500 hover:text-violet-600 hover:bg-violet-50 transition-all"

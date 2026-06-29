@@ -133,6 +133,7 @@ export default function EditProfilePage() {
     }
 
     toast.success("プロフィールを更新しました");
+    router.refresh();
     router.push(`/profile/${user.id}`);
   }
 

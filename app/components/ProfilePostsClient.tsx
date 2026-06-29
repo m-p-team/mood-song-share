@@ -50,8 +50,10 @@ export default function ProfilePostsClient({ posts: initialPosts, profileUserId 
 
   // Reset local state when initial posts change (e.g. router.refresh)
   useEffect(() => {
-    setPostVisibilities({});
-    setRemovedIds(new Set());
+    Promise.resolve().then(() => {
+      setPostVisibilities({});
+      setRemovedIds(new Set());
+    });
   }, [initialPosts]);
 
   const displayPosts = initialPosts.filter((p) => {
