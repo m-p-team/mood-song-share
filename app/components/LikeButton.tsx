@@ -5,6 +5,7 @@ import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
+import toast from "react-hot-toast";
 
 type Props = {
   postId: string;
@@ -60,7 +61,9 @@ export default function LikeButton({ postId }: Props) {
         .eq("post_id", postId)
         .eq("user_id", user.id);
 
-      if (!error) {
+      if (error) {
+        toast.error("いいねの解除に失敗しました");
+      } else {
         setLiked(false);
         setLikeCount((c) => c - 1);
       }
@@ -70,7 +73,9 @@ export default function LikeButton({ postId }: Props) {
         user_id: user.id,
       });
 
-      if (!error) {
+      if (error) {
+        toast.error("いいねに失敗しました");
+      } else {
         setLiked(true);
         setLikeCount((c) => c + 1);
         setPopping(true);
@@ -83,9 +88,10 @@ export default function LikeButton({ postId }: Props) {
 
   return (
     <button
+      type="button"
       onClick={handleClick}
-      disabled={saving}
-      className="flex items-center gap-1.5 group"
+      disabled={saving || loading}
+      className="flex items-center gap-1.5 group cursor-pointer disabled:cursor-default"
       aria-label={liked ? "いいね解除" : "いいね"}
     >
       <Heart

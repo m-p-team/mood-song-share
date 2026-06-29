@@ -16,6 +16,8 @@ export function useSupabaseUser() {
       }
       setUser(data.session?.user ?? null);
       setLoading(false);
+    }).catch(() => {
+      setLoading(false);
     });
 
     const {
@@ -25,6 +27,7 @@ export function useSupabaseUser() {
         syncUserToPublicTable(session.user);
       }
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
