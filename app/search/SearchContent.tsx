@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Sparkles, Send } from "lucide-react";
 import { supabase } from "@/app/lib/supabaseClient";
-import { MOODS, getMoodStyle } from "@/app/lib/moods";
+import { MOODS, getMoodStyle, parseMoods } from "@/app/lib/moods";
 
 type Post = {
   id: string;
@@ -56,7 +56,7 @@ export default function SearchContent() {
         .order("created_at", { ascending: false });
 
       if (selectedMood) {
-        query = query.eq("mood", selectedMood);
+        query = query.ilike("mood", `%${selectedMood}%`);
       }
 
       const { data } = await query;
@@ -246,7 +246,6 @@ export default function SearchContent() {
 
         <div className="flex flex-col gap-3">
           {posts.map((post) => {
-            const moodStyle = getMoodStyle(post.mood);
             return (
               <Link
                 key={post.id}
@@ -266,10 +265,12 @@ export default function SearchContent() {
                   <p className="font-medium text-sm text-slate-800 line-clamp-2 leading-snug">
                     {post.video_title}
                   </p>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${moodStyle}`}>
-                      {post.mood}
-                    </span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {parseMoods(post.mood).map((m) => (
+                      <span key={m} className={`text-xs font-medium px-2 py-0.5 rounded-full border ${getMoodStyle(m)}`}>
+                        {m}
+                      </span>
+                    ))}
                     <span className="text-xs text-slate-400">
                       {new Date(post.created_at).toLocaleDateString("ja-JP", {
                         timeZone: "Asia/Tokyo",

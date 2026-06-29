@@ -30,3 +30,11 @@ export function getMoodPlayerGradient(label: string): string {
 export function getMoodPlayerIconColor(label: string): string {
   return MOODS.find((m) => m.label === label)?.iconColor ?? "#7c3aed";
 }
+
+export function parseMoods(mood: string): string[] {
+  return mood ? mood.split(",").filter(Boolean) : [];
+}
+
+export function serializeMoods(moods: string[]): string {
+  return moods.join(",");
+}

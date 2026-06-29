@@ -1,5 +1,6 @@
 import { getPostById } from "@/app/lib/postService";
 import MoodBadge from "@/app/components/MoodBadge";
+import { parseMoods } from "@/app/lib/moods";
 import ExternalLink from "@/app/components/ExternalLink";
 import Player from "@/app/components/Player";
 import Thumbnail from "@/app/components/Thumbnail";
@@ -46,7 +47,11 @@ export default async function PostDetailPage({ params }: Props) {
             <h1 className="text-xl font-bold text-slate-800 leading-snug">
               {post.video_title}
             </h1>
-            <MoodBadge mood={post.mood} />
+            <div className="flex flex-wrap gap-1.5">
+              {parseMoods(post.mood).map((m) => (
+                <MoodBadge key={m} mood={m} />
+              ))}
+            </div>
           </div>
 
           {/* User info */}

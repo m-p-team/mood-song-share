@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
-import { MOODS } from "@/app/lib/moods";
+import { MOODS, serializeMoods } from "@/app/lib/moods";
 import { ArrowLeft, Link2, Music, Search } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -19,11 +19,17 @@ export default function PostPage() {
   const { user, loading } = useSupabaseUser();
 
   const [title, setTitle] = useState("");
-  const [mood, setMood] = useState("");
+  const [moods, setMoods] = useState<string[]>([]);
   const [videoUrl, setVideoUrl] = useState("");
   const [videoId, setVideoId] = useState("");
   const [saving, setSaving] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+
+  const toggleMood = (label: string) => {
+    setMoods((prev) =>
+      prev.includes(label) ? prev.filter((m) => m !== label) : [...prev, label]
+    );
+  };
 
   if (!loading && !user) {
     return (
@@ -44,13 +50,13 @@ export default function PostPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user || !mood) return;
+    if (!user || moods.length === 0) return;
 
     setSaving(true);
 
     const { error } = await supabase.from("posts").insert({
       user_id: user.id,
-      mood,
+      mood: serializeMoods(moods),
       video_id: videoId,
       video_title: title,
       video_url: videoUrl,
@@ -106,16 +112,17 @@ export default function PostPage() {
           <div className="space-y-2">
             <label className="block text-sm font-medium text-slate-700">
               今日の気分
-              {!mood && <span className="ml-1 text-xs text-rose-400">（必須）</span>}
+              {moods.length === 0 && <span className="ml-1 text-xs text-rose-400">（必須・複数選択可）</span>}
+              {moods.length > 0 && <span className="ml-1 text-xs text-violet-500">{moods.length}個選択中</span>}
             </label>
             <div className="flex flex-wrap gap-2">
               {MOODS.map(({ label, emoji, color }) => (
                 <button
                   key={label}
                   type="button"
-                  onClick={() => setMood(label)}
+                  onClick={() => toggleMood(label)}
                   className={`px-3 py-1.5 rounded-full border text-sm font-medium transition-all ${
-                    mood === label
+                    moods.includes(label)
                       ? `${color} ring-2 ring-offset-1 ring-violet-400 scale-105`
                       : "bg-white text-slate-600 border-slate-200 hover:border-violet-300"
                   }`}
@@ -171,7 +178,7 @@ export default function PostPage() {
           )}
 
           <button
-            disabled={saving || !mood}
+            disabled={saving || moods.length === 0}
             type="submit"
             className="w-full py-3 rounded-xl font-medium text-sm text-white bg-linear-to-r from-violet-600 to-purple-500 disabled:opacity-50 hover:opacity-90 transition-all shadow-sm"
           >
