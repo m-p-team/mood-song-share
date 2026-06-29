@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { MOODS, serializeMoods } from "@/app/lib/moods";
-import { ArrowLeft, Link2, Music, Search } from "lucide-react";
+import { ArrowLeft, Link2, Music, Search, Globe, Users, Lock } from "lucide-react";
+
+type Visibility = "public" | "followers_only" | "private";
+
+const VISIBILITY_OPTIONS: { value: Visibility; label: string; desc: string; icon: React.ReactNode }[] = [
+  { value: "public", label: "全体公開", desc: "誰でも見られる", icon: <Globe size={15} /> },
+  { value: "followers_only", label: "フォロワーのみ", desc: "フォロワーだけ見られる", icon: <Users size={15} /> },
+  { value: "private", label: "自分のみ", desc: "自分だけ見られる", icon: <Lock size={15} /> },
+];
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
@@ -22,6 +30,7 @@ export default function PostPage() {
   const [moods, setMoods] = useState<string[]>([]);
   const [videoUrl, setVideoUrl] = useState("");
   const [videoId, setVideoId] = useState("");
+  const [visibility, setVisibility] = useState<Visibility>("public");
   const [saving, setSaving] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
 
@@ -60,6 +69,7 @@ export default function PostPage() {
       video_id: videoId,
       video_title: title,
       video_url: videoUrl,
+      visibility,
     });
 
     setSaving(false);
@@ -159,6 +169,30 @@ export default function PostPage() {
                 placeholder="https://www.youtube.com/watch?v=..."
                 required
               />
+            </div>
+          </div>
+
+          {/* Visibility */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-slate-700">公開範囲</label>
+            <div className="flex gap-2">
+              {VISIBILITY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setVisibility(opt.value)}
+                  className={`flex-1 flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border text-xs font-medium transition-all ${
+                    visibility === opt.value
+                      ? "border-violet-400 bg-violet-50 text-violet-700 ring-2 ring-violet-300 ring-offset-1"
+                      : "border-slate-200 text-slate-500 hover:border-violet-300"
+                  }`}
+                >
+                  <span className={visibility === opt.value ? "text-violet-600" : "text-slate-400"}>
+                    {opt.icon}
+                  </span>
+                  <span>{opt.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 

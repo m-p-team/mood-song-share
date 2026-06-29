@@ -1,20 +1,34 @@
-import { getUserPosts, getUserProfile } from "@/app/lib/postService";
+import { getUserPosts, getUserProfile, getFollowCounts } from "@/app/lib/postService";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, User, Music2, Heart, Play } from "lucide-react";
+import { ArrowLeft, User, Music2, Heart, Play, Globe, Users, Lock } from "lucide-react";
 import MoodBadge from "@/app/components/MoodBadge";
 import ProfileEditButton from "@/app/components/ProfileEditButton";
+import FollowButton from "@/app/components/FollowButton";
 
 type Props = {
   params: Promise<{ id: string }>;
 };
 
+const VISIBILITY_ICON: Record<string, React.ReactNode> = {
+  public: <Globe size={11} className="text-slate-400" />,
+  followers_only: <Users size={11} className="text-violet-400" />,
+  private: <Lock size={11} className="text-slate-500" />,
+};
+
+const VISIBILITY_LABEL: Record<string, string> = {
+  public: "全体公開",
+  followers_only: "フォロワーのみ",
+  private: "自分のみ",
+};
+
 export default async function ProfilePage({ params }: Props) {
   const { id } = await params;
 
-  const [profile, posts] = await Promise.all([
+  const [profile, posts, followCounts] = await Promise.all([
     getUserProfile(id),
     getUserPosts(id),
+    getFollowCounts(id),
   ]);
 
   const totalLikes = posts.reduce((sum, p) => sum + (p.like_count ?? 0), 0);
@@ -51,7 +65,7 @@ export default async function ProfilePage({ params }: Props) {
         </div>
 
         <div className="px-5 pb-5">
-          <div className="-mt-10 mb-4 relative z-10">
+          <div className="-mt-10 mb-4 relative z-10 flex items-end justify-between">
             <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-md">
               {profile?.avatar_url ? (
                 <Image
@@ -71,6 +85,9 @@ export default async function ProfilePage({ params }: Props) {
                 </div>
               )}
             </div>
+            <div className="mb-1">
+              <FollowButton targetUserId={id} />
+            </div>
           </div>
 
           <div className="space-y-1">
@@ -84,7 +101,7 @@ export default async function ProfilePage({ params }: Props) {
           </div>
 
           {/* Stats */}
-          <div className="flex gap-6 mt-4 pt-4 border-t border-violet-50">
+          <div className="flex gap-6 mt-4 pt-4 border-t border-violet-50 flex-wrap">
             <div className="flex items-center gap-2 text-slate-600">
               <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
                 <Music2 size={14} className="text-violet-600" />
@@ -101,6 +118,24 @@ export default async function ProfilePage({ params }: Props) {
               <div>
                 <p className="text-lg font-bold text-slate-800">{totalLikes}</p>
                 <p className="text-xs text-slate-500">いいね合計</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-slate-600">
+              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <Users size={14} className="text-blue-500" />
+              </div>
+              <div>
+                <p className="text-lg font-bold text-slate-800">{followCounts.followers}</p>
+                <p className="text-xs text-slate-500">フォロワー</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-slate-600">
+              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                <Users size={14} className="text-indigo-500" />
+              </div>
+              <div>
+                <p className="text-lg font-bold text-slate-800">{followCounts.following}</p>
+                <p className="text-xs text-slate-500">フォロー中</p>
               </div>
             </div>
           </div>
@@ -120,38 +155,49 @@ export default async function ProfilePage({ params }: Props) {
           </div>
         )}
 
-        {posts.map((post) => (
-          <Link
-            key={post.id}
-            href={`/post/${post.id}`}
-            className="flex gap-3 bg-white border border-violet-100 rounded-2xl p-3 hover:shadow-md hover:border-violet-200 transition-all group"
-          >
-            <div className="relative w-28 shrink-0 rounded-xl overflow-hidden" style={{ height: "72px" }}>
-              <Image
-                src={`https://img.youtube.com/vi/${post.video_id}/mqdefault.jpg`}
-                alt={post.video_title}
-                fill
-                className="object-cover"
-                sizes="112px"
-              />
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all bg-black/20">
-                <Play size={18} className="text-white" fill="white" />
-              </div>
-            </div>
-            <div className="flex flex-col justify-between py-1 min-w-0 flex-1">
-              <p className="font-medium text-sm text-slate-800 line-clamp-2 leading-snug">
-                {post.video_title}
-              </p>
-              <div className="flex items-center justify-between">
-                <MoodBadge mood={post.mood} clickable={false} />
-                <div className="flex items-center gap-1 text-xs text-slate-400">
-                  <Heart size={11} className="text-rose-400" fill="currentColor" />
-                  <span>{post.like_count ?? 0}</span>
+        {posts.map((post) => {
+          const vis = (post as { visibility?: string }).visibility ?? "public";
+          return (
+            <Link
+              key={post.id}
+              href={`/post/${post.id}`}
+              className="flex gap-3 bg-white border border-violet-100 rounded-2xl p-3 hover:shadow-md hover:border-violet-200 transition-all group"
+            >
+              <div className="relative w-28 shrink-0 rounded-xl overflow-hidden" style={{ height: "72px" }}>
+                <Image
+                  src={`https://img.youtube.com/vi/${post.video_id}/mqdefault.jpg`}
+                  alt={post.video_title}
+                  fill
+                  className="object-cover"
+                  sizes="112px"
+                />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all bg-black/20">
+                  <Play size={18} className="text-white" fill="white" />
                 </div>
               </div>
-            </div>
-          </Link>
-        ))}
+              <div className="flex flex-col justify-between py-1 min-w-0 flex-1">
+                <p className="font-medium text-sm text-slate-800 line-clamp-2 leading-snug">
+                  {post.video_title}
+                </p>
+                <div className="flex items-center justify-between">
+                  <MoodBadge mood={post.mood} clickable={false} />
+                  <div className="flex items-center gap-2">
+                    {vis !== "public" && (
+                      <span className="flex items-center gap-0.5 text-[10px] text-slate-400">
+                        {VISIBILITY_ICON[vis]}
+                        {VISIBILITY_LABEL[vis]}
+                      </span>
+                    )}
+                    <div className="flex items-center gap-1 text-xs text-slate-400">
+                      <Heart size={11} className="text-rose-400" fill="currentColor" />
+                      <span>{post.like_count ?? 0}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </main>
   );

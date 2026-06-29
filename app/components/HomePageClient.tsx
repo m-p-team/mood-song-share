@@ -15,6 +15,8 @@ import { parseMoods } from "@/app/lib/moods";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
+type Visibility = "public" | "followers_only" | "private";
+
 type Post = {
   id: string;
   user_id: string;
@@ -23,6 +25,7 @@ type Post = {
   video_title: string;
   video_url: string;
   created_at_jst: string;
+  visibility?: Visibility;
   like_count?: number;
   users?: { name: string | null; avatar_url: string | null } | null;
 };
@@ -36,6 +39,7 @@ type Tab = "new" | "popular";
 export default function HomePageClient({ posts: initialPosts }: Props) {
   const { user } = useSupabaseUser();
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
+  const [postVisibilities, setPostVisibilities] = useState<Record<string, Visibility>>({});
   const [activeTab, setActiveTab] = useState<Tab>("new");
   const [popularPosts, setPopularPosts] = useState<Post[]>([]);
   const [popularLoading, setPopularLoading] = useState(false);
@@ -181,7 +185,11 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
                 postId={post.id}
                 isOwner={post.user_id === user?.id}
                 shareUrl={`${process.env.NEXT_PUBLIC_SITE_URL}/post/${post.id}`}
+                visibility={postVisibilities[post.id] ?? (post.visibility as Visibility)}
                 onDelete={() => setDeletePostId(post.id)}
+                onVisibilityChange={(v) =>
+                  setPostVisibilities((prev) => ({ ...prev, [post.id]: v }))
+                }
               />
             </div>
 

@@ -6,6 +6,15 @@ import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { MOODS, parseMoods, serializeMoods } from "@/app/lib/moods";
 import toast from "react-hot-toast";
+import { Globe, Users, Lock } from "lucide-react";
+
+type Visibility = "public" | "followers_only" | "private";
+
+const VISIBILITY_OPTIONS: { value: Visibility; label: string; icon: React.ReactNode }[] = [
+  { value: "public", label: "全体公開", icon: <Globe size={15} /> },
+  { value: "followers_only", label: "フォロワーのみ", icon: <Users size={15} /> },
+  { value: "private", label: "自分のみ", icon: <Lock size={15} /> },
+];
 
 export default function EditPostPage() {
   const router = useRouter();
@@ -17,6 +26,7 @@ export default function EditPostPage() {
   const [title, setTitle] = useState("");
   const [moods, setMoods] = useState<string[]>([]);
   const [videoId, setVideoId] = useState("");
+  const [visibility, setVisibility] = useState<Visibility>("public");
   const [saving, setSaving] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
 
@@ -32,7 +42,7 @@ export default function EditPostPage() {
     const fetchPost = async () => {
       const { data, error } = await supabase
         .from("posts")
-        .select("user_id, video_title, mood, video_id")
+        .select("user_id, video_title, mood, video_id, visibility")
         .eq("id", postId)
         .single();
 
@@ -50,6 +60,7 @@ export default function EditPostPage() {
       setTitle(data.video_title);
       setMoods(parseMoods(data.mood));
       setVideoId(data.video_id);
+      setVisibility((data.visibility as Visibility) ?? "public");
       setInitialLoading(false);
     };
 
@@ -73,6 +84,7 @@ export default function EditPostPage() {
       .update({
         video_title: title,
         mood: serializeMoods(moods),
+        visibility,
       })
       .eq("id", postId);
 
@@ -120,6 +132,29 @@ export default function EditPostPage() {
                 }`}
               >
                 {emoji} {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">公開範囲</label>
+          <div className="flex gap-2">
+            {VISIBILITY_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setVisibility(opt.value)}
+                className={`flex-1 flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border text-xs font-medium transition-all ${
+                  visibility === opt.value
+                    ? "border-violet-400 bg-violet-50 text-violet-700 ring-2 ring-violet-300 ring-offset-1"
+                    : "border-slate-200 text-slate-500 hover:border-violet-300"
+                }`}
+              >
+                <span className={visibility === opt.value ? "text-violet-600" : "text-slate-400"}>
+                  {opt.icon}
+                </span>
+                <span>{opt.label}</span>
               </button>
             ))}
           </div>
