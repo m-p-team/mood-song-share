@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
-import { MOODS } from "@/app/lib/moods";
+import { MOODS, parseMoods, serializeMoods } from "@/app/lib/moods";
 import toast from "react-hot-toast";
 
 export default function EditPostPage() {
@@ -15,10 +15,16 @@ export default function EditPostPage() {
   const { user, loading } = useSupabaseUser();
 
   const [title, setTitle] = useState("");
-  const [mood, setMood] = useState("");
+  const [moods, setMoods] = useState<string[]>([]);
   const [videoId, setVideoId] = useState("");
   const [saving, setSaving] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+
+  const toggleMood = (label: string) => {
+    setMoods((prev) =>
+      prev.includes(label) ? prev.filter((m) => m !== label) : [...prev, label]
+    );
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -42,7 +48,7 @@ export default function EditPostPage() {
       }
 
       setTitle(data.video_title);
-      setMood(data.mood);
+      setMoods(parseMoods(data.mood));
       setVideoId(data.video_id);
       setInitialLoading(false);
     };
@@ -66,7 +72,7 @@ export default function EditPostPage() {
       .from("posts")
       .update({
         video_title: title,
-        mood,
+        mood: serializeMoods(moods),
       })
       .eq("id", postId);
 
@@ -97,16 +103,19 @@ export default function EditPostPage() {
         </div>
 
         <div>
-          <label className="block text-sm mb-1">今日の気分</label>
+          <label className="block text-sm mb-1">
+            今日の気分
+            {moods.length > 0 && <span className="ml-1 text-xs text-violet-500">{moods.length}個選択中</span>}
+          </label>
           <div className="flex flex-wrap gap-2">
-            {MOODS.map(({ label, emoji }) => (
+            {MOODS.map(({ label, emoji, color }) => (
               <button
                 key={label}
                 type="button"
-                onClick={() => setMood(label)}
+                onClick={() => toggleMood(label)}
                 className={`px-3 py-1.5 rounded-full border text-sm transition ${
-                  mood === label
-                    ? "bg-blue-600 text-white border-blue-600"
+                  moods.includes(label)
+                    ? `${color} ring-2 ring-offset-1 ring-violet-400`
                     : "bg-white text-gray-700 border-gray-300 hover:border-blue-400"
                 }`}
               >

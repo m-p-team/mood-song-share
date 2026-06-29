@@ -2,11 +2,15 @@ import { supabase } from "@/app/lib/supabaseClient";
 import type { User } from "@supabase/supabase-js";
 
 export async function syncUserToPublicTable(user: User) {
-  const { error, data } = await supabase.from("users").upsert({
-    id: user.id,
-    name: user.user_metadata.full_name ?? "No Name",
-    email: user.email,
-  });
+  // ignoreDuplicates: true で既存ユーザーの name 等カスタム値を上書きしない
+  const { error } = await supabase.from("users").upsert(
+    {
+      id: user.id,
+      name: user.user_metadata.full_name ?? "No Name",
+      email: user.email,
+    },
+    { onConflict: "id", ignoreDuplicates: true }
+  );
 
   if (error) {
     console.error("Failed to sync user:", {
@@ -15,7 +19,5 @@ export async function syncUserToPublicTable(user: User) {
       hint: error.hint,
       code: error.code,
     });
-  } else {
-    console.log("User synced:", data);
   }
 }

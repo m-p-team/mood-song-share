@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import YouTube from "react-youtube";
-import { Play, Pause, RotateCcw } from "lucide-react";
-import { getMoodPlayerGradient, getMoodPlayerIconColor } from "@/app/lib/moods";
+import { Play, Pause, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { getMoodPlayerGradient, getMoodPlayerIconColor, parseMoods } from "@/app/lib/moods";
 
 type Props = {
   videoId: string;
@@ -22,12 +22,15 @@ export default function Player({ videoId, mood }: Props) {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [isEnd, setIsEnd] = useState(false);
+  const [volume, setVolume] = useState(80);
 
-  const gradient = getMoodPlayerGradient(mood ?? "");
-  const iconColor = getMoodPlayerIconColor(mood ?? "");
+  const firstMood = parseMoods(mood ?? "")[0] ?? "";
+  const gradient = getMoodPlayerGradient(firstMood);
+  const iconColor = getMoodPlayerIconColor(firstMood);
 
   const onReady = (event: YouTubeEvent) => {
     playerRef.current = event.target;
+    event.target.setVolume(80);
 
     const interval = setInterval(() => {
       const d = event.target.getDuration();
@@ -38,6 +41,12 @@ export default function Player({ videoId, mood }: Props) {
     }, 200);
 
     event.target.playVideo();
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Number(e.target.value);
+    setVolume(v);
+    playerRef.current?.setVolume(v);
   };
 
   const onStateChange = (event: YouTubeEvent) => {
@@ -149,6 +158,31 @@ export default function Player({ videoId, mood }: Props) {
             <Play size={26} style={{ color: iconColor }} fill={iconColor} className="ml-1" />
           )}
         </button>
+      </div>
+
+      {/* Volume */}
+      <div className="flex items-center gap-3">
+        {volume === 0 ? (
+          <VolumeX size={16} className="text-white/70 shrink-0" />
+        ) : (
+          <Volume2 size={16} className="text-white/70 shrink-0" />
+        )}
+        <div className="relative flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
+          <div
+            className="absolute left-0 top-0 h-full bg-white rounded-full"
+            style={{ width: `${volume}%` }}
+          />
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={volume}
+            onChange={handleVolumeChange}
+            className="absolute inset-0 w-full opacity-0 cursor-pointer"
+            aria-label="音量"
+          />
+        </div>
+        <span className="text-xs text-white/60 tabular-nums w-6 text-right">{volume}</span>
       </div>
     </div>
   );

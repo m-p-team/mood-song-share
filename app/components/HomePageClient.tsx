@@ -11,6 +11,7 @@ import ConfirmDeleteModal from "@/app/components/ConfirmDeleteModal";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { supabase } from "@/app/lib/supabaseClient";
 import { getPopularPosts } from "@/app/lib/postService";
+import { parseMoods } from "@/app/lib/moods";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -185,7 +186,11 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
             </div>
 
             <div className="flex items-center justify-between gap-2">
-              <MoodBadge mood={post.mood} />
+              <div className="flex flex-wrap gap-1">
+                {parseMoods(post.mood).map((m) => (
+                  <MoodBadge key={m} mood={m} />
+                ))}
+              </div>
 
               {/* User info */}
               <Link
