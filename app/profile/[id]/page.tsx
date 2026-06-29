@@ -1,10 +1,11 @@
 import { getUserPosts, getUserProfile, getFollowCounts } from "@/app/lib/postService";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, User, Music2, Heart, Play, Globe, Users, Lock } from "lucide-react";
+import { ArrowLeft, User, Play, Globe, Users, Lock, Heart } from "lucide-react";
 import MoodBadge from "@/app/components/MoodBadge";
 import ProfileEditButton from "@/app/components/ProfileEditButton";
-import FollowButton from "@/app/components/FollowButton";
+import ProfileInteractive from "@/app/components/ProfileInteractive";
+import PlaylistSection from "@/app/components/PlaylistSection";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -65,7 +66,8 @@ export default async function ProfilePage({ params }: Props) {
         </div>
 
         <div className="px-5 pb-5">
-          <div className="-mt-10 mb-4 relative z-10 flex items-end justify-between">
+          {/* Avatar — pulled up over banner, no button here */}
+          <div className="-mt-10 mb-3 relative z-10">
             <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-md">
               {profile?.avatar_url ? (
                 <Image
@@ -85,12 +87,10 @@ export default async function ProfilePage({ params }: Props) {
                 </div>
               )}
             </div>
-            <div className="mb-1">
-              <FollowButton targetUserId={id} />
-            </div>
           </div>
 
-          <div className="space-y-1">
+          {/* Name + edit button */}
+          <div className="space-y-0.5 mb-3">
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-slate-800">{displayName}</h1>
               <ProfileEditButton profileUserId={id} />
@@ -100,46 +100,20 @@ export default async function ProfilePage({ params }: Props) {
             )}
           </div>
 
-          {/* Stats */}
-          <div className="flex gap-6 mt-4 pt-4 border-t border-violet-50 flex-wrap">
-            <div className="flex items-center gap-2 text-slate-600">
-              <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
-                <Music2 size={14} className="text-violet-600" />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-slate-800">{posts.length}</p>
-                <p className="text-xs text-slate-500">投稿</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-slate-600">
-              <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center">
-                <Heart size={14} className="text-rose-500" />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-slate-800">{totalLikes}</p>
-                <p className="text-xs text-slate-500">いいね合計</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-slate-600">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                <Users size={14} className="text-blue-500" />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-slate-800">{followCounts.followers}</p>
-                <p className="text-xs text-slate-500">フォロワー</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-slate-600">
-              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                <Users size={14} className="text-indigo-500" />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-slate-800">{followCounts.following}</p>
-                <p className="text-xs text-slate-500">フォロー中</p>
-              </div>
-            </div>
-          </div>
+          {/* Follow button, DM, stats — client component */}
+          <ProfileInteractive
+            targetUserId={id}
+            postCount={posts.length}
+            totalLikes={totalLikes}
+            followerCount={followCounts.followers}
+            followingCount={followCounts.following}
+          />
         </div>
+      </div>
+
+      {/* Playlists */}
+      <div className="bg-white rounded-2xl border border-violet-100 shadow-sm p-5">
+        <PlaylistSection profileUserId={id} />
       </div>
 
       {/* Posts */}
