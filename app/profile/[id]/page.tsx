@@ -34,14 +34,41 @@ export default async function ProfilePage({ params }: Props) {
 
       {/* Profile card */}
       <div className="bg-white rounded-2xl border border-violet-100 shadow-sm overflow-hidden">
-        <div className="h-24 bg-linear-to-r from-violet-600 to-purple-500" />
+        {/* Banner */}
+        <div className="relative h-32">
+          {profile?.banner_url ? (
+            <Image
+              src={profile.banner_url}
+              alt="バナー"
+              fill
+              className="object-cover"
+              sizes="672px"
+              priority
+            />
+          ) : (
+            <div className="h-full bg-linear-to-r from-violet-600 to-purple-500" />
+          )}
+        </div>
+
         <div className="px-5 pb-5">
           <div className="-mt-10 mb-4">
-            <div className="w-20 h-20 rounded-2xl bg-white border-4 border-white shadow-md flex items-center justify-center bg-linear-to-br from-violet-100 to-purple-100">
-              {profile ? (
-                <span className="text-3xl font-bold text-violet-600">{initial}</span>
+            <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-md">
+              {profile?.avatar_url ? (
+                <Image
+                  src={profile.avatar_url}
+                  alt={displayName}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <User size={32} className="text-violet-400" />
+                <div className="w-full h-full bg-linear-to-br from-violet-100 to-purple-100 flex items-center justify-center">
+                  {profile ? (
+                    <span className="text-3xl font-bold text-violet-600">{initial}</span>
+                  ) : (
+                    <User size={32} className="text-violet-400" />
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -99,7 +126,7 @@ export default async function ProfilePage({ params }: Props) {
             href={`/post/${post.id}`}
             className="flex gap-3 bg-white border border-violet-100 rounded-2xl p-3 hover:shadow-md hover:border-violet-200 transition-all group"
           >
-            <div className="relative w-28 h-18 shrink-0 rounded-xl overflow-hidden" style={{ height: "72px" }}>
+            <div className="relative w-28 shrink-0 rounded-xl overflow-hidden" style={{ height: "72px" }}>
               <Image
                 src={`https://img.youtube.com/vi/${post.video_id}/mqdefault.jpg`}
                 alt={post.video_title}

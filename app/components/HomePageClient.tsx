@@ -23,6 +23,7 @@ type Post = {
   video_url: string;
   created_at_jst: string;
   like_count?: number;
+  users?: { name: string | null; avatar_url: string | null } | null;
 };
 
 type Props = {
@@ -184,6 +185,29 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
             </div>
 
             <MoodBadge mood={post.mood} />
+
+            {/* User info */}
+            <Link
+              href={`/profile/${post.user_id}`}
+              className="flex items-center gap-2 w-fit hover:opacity-80 transition-opacity"
+            >
+              {post.users?.avatar_url ? (
+                <Image
+                  src={post.users.avatar_url}
+                  alt={post.users.name ?? ""}
+                  width={22}
+                  height={22}
+                  className="rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-[22px] h-[22px] rounded-full bg-violet-100 flex items-center justify-center shrink-0">
+                  <span className="text-[10px] font-bold text-violet-600">
+                    {(post.users?.name ?? "?").charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <span className="text-xs text-slate-500 font-medium">{post.users?.name ?? "ユーザー"}</span>
+            </Link>
 
             <div className="flex items-center justify-between pt-1">
               <div className="flex items-center gap-3">
