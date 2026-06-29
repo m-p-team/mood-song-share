@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
-import { Music2, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
@@ -41,15 +42,15 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-8">
         {/* Hero */}
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 mx-auto rounded-3xl bg-linear-to-br from-violet-600 to-purple-500 flex items-center justify-center shadow-xl">
-            <Music2 size={36} className="text-white" />
+          <div className="w-20 h-20 mx-auto rounded-3xl overflow-hidden shadow-xl">
+            <Image src="/logo.png" alt="V-Tuune" width={80} height={80} className="w-full h-full object-cover" />
           </div>
           <div className="space-y-1">
             <h1 className="text-3xl font-bold bg-linear-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">
               V-Tuune
             </h1>
             <p className="text-slate-500 text-sm">
-              気分に合わせたVTuber音楽をシェアしよう
+              今の気分に合った音楽をシェアしよう
             </p>
           </div>
         </div>
