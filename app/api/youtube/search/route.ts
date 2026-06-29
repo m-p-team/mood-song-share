@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     process.env.YOUTUBE_API_KEY || process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: "YouTube API key not configured" },
+      { error: "YOUTUBE_API_KEY が設定されていません" },
       { status: 500 }
     );
   }
@@ -22,12 +22,30 @@ export async function GET(request: NextRequest) {
   url.searchParams.set("maxResults", "10");
   url.searchParams.set("key", apiKey);
 
-  const res = await fetch(url.toString());
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+  const res = await fetch(url.toString(), {
+    headers: {
+      // APIキーにHTTP参照元制限がある場合に対応
+      Referer: siteUrl,
+      Origin: siteUrl,
+    },
+  });
+
   const data = await res.json();
 
   if (!res.ok) {
+    const message: string = data.error?.message ?? "YouTube API error";
+    const isBlocked =
+      message.includes("blocked") || message.includes("PERMISSION_DENIED");
+
     return NextResponse.json(
-      { error: data.error?.message ?? "YouTube API error" },
+      {
+        error: isBlocked
+          ? "YouTube Data API v3 が無効またはAPIキーに制限があります。Google Cloud Console で「YouTube Data API v3」が有効になっているか、APIキーの制限を確認してください。"
+          : message,
+      },
       { status: res.status }
     );
   }

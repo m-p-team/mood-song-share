@@ -51,7 +51,7 @@ export default async function ProfilePage({ params }: Props) {
         </div>
 
         <div className="px-5 pb-5">
-          <div className="-mt-10 mb-4">
+          <div className="-mt-10 mb-4 relative z-10">
             <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-md">
               {profile?.avatar_url ? (
                 <Image

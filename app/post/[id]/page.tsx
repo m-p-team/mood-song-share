@@ -5,6 +5,7 @@ import Player from "@/app/components/Player";
 import Thumbnail from "@/app/components/Thumbnail";
 import LikeButton from "@/app/components/LikeButton";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 
 type Props = {
@@ -16,6 +17,10 @@ type Props = {
 export default async function PostDetailPage({ params }: Props) {
   const { id } = await params;
   const post = await getPostById(id);
+
+  const users = post.users as { name: string | null; avatar_url: string | null } | null;
+  const userName = users?.name ?? "ユーザー";
+  const avatarUrl = users?.avatar_url ?? null;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
@@ -44,8 +49,33 @@ export default async function PostDetailPage({ params }: Props) {
             <MoodBadge mood={post.mood} />
           </div>
 
+          {/* User info */}
+          <Link
+            href={`/profile/${post.user_id}`}
+            className="flex items-center gap-2 w-fit hover:opacity-70 transition-opacity"
+          >
+            <div className="w-7 h-7 rounded-full overflow-hidden shrink-0">
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt={userName}
+                  width={28}
+                  height={28}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-violet-100 flex items-center justify-center">
+                  <span className="text-xs font-bold text-violet-600">
+                    {userName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>
+            <span className="text-sm text-slate-500 font-medium">{userName}</span>
+          </Link>
+
           {/* Actions */}
-          <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center justify-between pt-1 border-t border-slate-50">
             <ExternalLink url={post.video_url} />
             <LikeButton postId={post.id} />
           </div>
