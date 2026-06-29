@@ -256,6 +256,15 @@ using (auth.uid() = user_id);
 grant usage on schema dev to anon, authenticated;
 grant usage on schema prod to anon, authenticated;
 
+-- ストレージバケット（Supabaseダッシュボードで作成するか以下を実行）
+-- INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);
+
+-- ストレージポリシー
+-- CREATE POLICY "Anyone can view avatars" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+-- CREATE POLICY "Authenticated users can upload avatars" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+-- CREATE POLICY "Users can update own avatar" ON storage.objects FOR UPDATE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+-- CREATE POLICY "Users can delete own avatar" ON storage.objects FOR DELETE USING (bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1]);
+
 -- dev
 grant select, insert, update, delete
 on all tables in schema dev
@@ -287,3 +296,26 @@ create policy "Users can delete own posts"
 on prod.posts
 for delete
 using (auth.uid() = user_id);
+
+-- =============================================
+-- マイグレーション: avatar_url / banner_url 追加
+-- =============================================
+alter table users add column if not exists avatar_url text;
+alter table users add column if not exists banner_url text;
+alter table dev.users add column if not exists avatar_url text;
+alter table dev.users add column if not exists banner_url text;
+alter table prod.users add column if not exists avatar_url text;
+alter table prod.users add column if not exists banner_url text;
+
+-- =============================================
+-- マイグレーション: ユーザープロフィールを全員が読めるように変更
+-- （投稿カードにユーザー名を表示するため）
+-- =============================================
+drop policy if exists "Users can read own profile" on users;
+create policy "Anyone can read user profiles" on users for select using (true);
+
+drop policy if exists "Users can read own profile" on dev.users;
+create policy "Anyone can read user profiles" on dev.users for select using (true);
+
+drop policy if exists "Users can read own profile" on prod.users;
+create policy "Anyone can read user profiles" on prod.users for select using (true);

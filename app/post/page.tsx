@@ -5,8 +5,14 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { MOODS } from "@/app/lib/moods";
-import { ArrowLeft, Link2, Music } from "lucide-react";
+import { ArrowLeft, Link2, Music, Search } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const YouTubeSearchModal = dynamic(
+  () => import("@/app/components/YouTubeSearchModal"),
+  { ssr: false }
+);
 
 export default function PostPage() {
   const router = useRouter();
@@ -17,6 +23,7 @@ export default function PostPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [videoId, setVideoId] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
 
   if (!loading && !user) {
     return (
@@ -37,9 +44,7 @@ export default function PostPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) return;
-
-    if (!mood) return;
+    if (!user || !mood) return;
 
     setSaving(true);
 
@@ -70,7 +75,6 @@ export default function PostPage() {
 
   return (
     <main className="max-w-xl mx-auto px-4 py-6">
-      {/* Back */}
       <Link
         href="/"
         className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-violet-600 transition-colors mb-5"
@@ -122,9 +126,19 @@ export default function PostPage() {
             </div>
           </div>
 
-          {/* YouTube URL */}
+          {/* YouTube URL + Search */}
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-slate-700">YouTube URL</label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700">YouTube URL</label>
+              <button
+                type="button"
+                onClick={() => setShowSearch(true)}
+                className="flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-800 font-medium transition-colors"
+              >
+                <Search size={13} />
+                動画を検索して選ぶ
+              </button>
+            </div>
             <div className="relative">
               <Link2 size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -165,6 +179,18 @@ export default function PostPage() {
           </button>
         </form>
       </div>
+
+      {showSearch && (
+        <YouTubeSearchModal
+          onSelect={(video) => {
+            setVideoId(video.id);
+            setVideoUrl(video.url);
+            if (!title) setTitle(video.title);
+            setShowSearch(false);
+          }}
+          onClose={() => setShowSearch(false)}
+        />
+      )}
     </main>
   );
 }

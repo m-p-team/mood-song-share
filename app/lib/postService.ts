@@ -14,7 +14,7 @@ function formatJst(dateStr: string) {
 export async function getPosts() {
   const { data, error } = await supabase
     .from("posts")
-    .select("*")
+    .select("*, users!user_id(name, avatar_url)")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -31,7 +31,7 @@ export async function getPosts() {
 export async function getPopularPosts() {
   const { data, error } = await supabase
     .from("posts")
-    .select("*, likes(count)")
+    .select("*, likes(count), users!user_id(name, avatar_url)")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -51,7 +51,7 @@ export async function getPopularPosts() {
 export async function getPostById(id: string) {
   const { data, error } = await supabase
     .from("posts")
-    .select("*")
+    .select("*, users!user_id(name, avatar_url)")
     .eq("id", id)
     .single();
 
@@ -85,7 +85,7 @@ export async function getUserPosts(userId: string) {
 export async function getUserProfile(userId: string) {
   const { data, error } = await supabase
     .from("users")
-    .select("id, name, email")
+    .select("id, name, email, avatar_url, banner_url")
     .eq("id", userId)
     .maybeSingle();
 
