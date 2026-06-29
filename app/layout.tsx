@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "V-Tuune",
-  description: "気分に合わせたVTuber音楽をシェアしよう",
+  description: "今の気分に合った音楽をシェアしよう",
 };
 
 export default function RootLayout({

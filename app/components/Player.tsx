@@ -22,7 +22,10 @@ export default function Player({ videoId, mood }: Props) {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [isEnd, setIsEnd] = useState(false);
-  const [volume, setVolume] = useState(80);
+  const [volume, setVolume] = useState(() => {
+    if (typeof window === "undefined") return 80;
+    return Number(localStorage.getItem("player_volume") ?? 80);
+  });
 
   const firstMood = parseMoods(mood ?? "")[0] ?? "";
   const gradient = getMoodPlayerGradient(firstMood);
@@ -30,7 +33,7 @@ export default function Player({ videoId, mood }: Props) {
 
   const onReady = (event: YouTubeEvent) => {
     playerRef.current = event.target;
-    event.target.setVolume(80);
+    event.target.setVolume(volume);
 
     const interval = setInterval(() => {
       const d = event.target.getDuration();
@@ -47,6 +50,7 @@ export default function Player({ videoId, mood }: Props) {
     const v = Number(e.target.value);
     setVolume(v);
     playerRef.current?.setVolume(v);
+    localStorage.setItem("player_volume", String(v));
   };
 
   const onStateChange = (event: YouTubeEvent) => {
@@ -123,7 +127,7 @@ export default function Player({ videoId, mood }: Props) {
 
       {/* Progress bar */}
       <div className="space-y-2">
-        <div className="relative h-1.5 bg-white/20 rounded-full overflow-hidden">
+        <div className="relative h-1.5 bg-white/20 rounded-full">
           <div
             className="absolute left-0 top-0 h-full bg-white rounded-full transition-all"
             style={{ width: `${progress}%` }}
@@ -134,7 +138,8 @@ export default function Player({ videoId, mood }: Props) {
             max={duration || 100}
             value={currentTime}
             onChange={handleSeek}
-            className="absolute inset-0 w-full opacity-0 cursor-pointer"
+            className="absolute w-full opacity-0 cursor-pointer top-1/2 -translate-y-1/2"
+            style={{ height: "24px" }}
           />
         </div>
         <div className="flex justify-between text-xs text-white/70 tabular-nums">
@@ -167,7 +172,7 @@ export default function Player({ videoId, mood }: Props) {
         ) : (
           <Volume2 size={16} className="text-white/70 shrink-0" />
         )}
-        <div className="relative flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
+        <div className="relative flex-1 h-1.5 bg-white/20 rounded-full">
           <div
             className="absolute left-0 top-0 h-full bg-white rounded-full"
             style={{ width: `${volume}%` }}
@@ -178,7 +183,8 @@ export default function Player({ videoId, mood }: Props) {
             max={100}
             value={volume}
             onChange={handleVolumeChange}
-            className="absolute inset-0 w-full opacity-0 cursor-pointer"
+            className="absolute w-full opacity-0 cursor-pointer top-1/2 -translate-y-1/2"
+            style={{ height: "24px" }}
             aria-label="音量"
           />
         </div>
