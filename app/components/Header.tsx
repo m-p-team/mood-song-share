@@ -15,8 +15,14 @@ export default function Header() {
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-violet-100 shadow-sm">
       <div className="max-w-3xl mx-auto flex items-center justify-between px-4 h-14">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-xl overflow-hidden">
-            <Image src="/logo.png" alt="V-Tuune" width={32} height={32} className="object-cover" />
+          <div className="w-8 h-8">
+            <Image
+              src="/logo.png"
+              alt="V-Tuune"
+              width={32}
+              height={32}
+              className="object-cover"
+            />
           </div>
           <span className="font-bold text-lg bg-linear-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">
             V-Tuune
