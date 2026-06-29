@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { Music2, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,21 +30,31 @@ export default function SignupPage() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: name.trim() },
+        emailRedirectTo: `${window.location.origin}/`,
       },
     });
     setLoading(false);
 
     if (error) {
-      if (error.message.includes("already registered")) {
-        toast.error("このメールアドレスはすでに登録されています");
-      } else {
-        toast.error("登録に失敗しました: " + error.message);
-      }
+      toast.error("登録に失敗しました: " + error.message);
+      return;
+    }
+
+    // identities が空 = そのメールアドレスはすでに登録済み
+    // （Supabaseはメール確認ON時にセキュリティ上エラーを返さないためこの方法で検出）
+    if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      toast.error("このメールアドレスはすでに登録されています");
+      return;
+    }
+
+    // メール確認が不要な設定の場合はセッションが即時発行される
+    if (data.session) {
+      router.push("/");
       return;
     }
 

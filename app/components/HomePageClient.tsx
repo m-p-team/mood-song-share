@@ -184,30 +184,34 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
               />
             </div>
 
-            <MoodBadge mood={post.mood} />
+            <div className="flex items-center justify-between gap-2">
+              <MoodBadge mood={post.mood} />
 
-            {/* User info */}
-            <Link
-              href={`/profile/${post.user_id}`}
-              className="flex items-center gap-2 w-fit hover:opacity-80 transition-opacity"
-            >
-              {post.users?.avatar_url ? (
-                <Image
-                  src={post.users.avatar_url}
-                  alt={post.users.name ?? ""}
-                  width={22}
-                  height={22}
-                  className="rounded-full object-cover"
-                />
-              ) : (
-                <div className="w-[22px] h-[22px] rounded-full bg-violet-100 flex items-center justify-center shrink-0">
-                  <span className="text-[10px] font-bold text-violet-600">
-                    {(post.users?.name ?? "?").charAt(0).toUpperCase()}
-                  </span>
+              {/* User info */}
+              <Link
+                href={`/profile/${post.user_id}`}
+                className="flex items-center gap-1.5 hover:opacity-70 transition-opacity min-w-0"
+              >
+                <div className="w-5 h-5 rounded-full overflow-hidden shrink-0">
+                  {post.users?.avatar_url ? (
+                    <Image
+                      src={post.users.avatar_url}
+                      alt={post.users.name ?? ""}
+                      width={20}
+                      height={20}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-violet-100 flex items-center justify-center">
+                      <span className="text-[9px] font-bold text-violet-600">
+                        {(post.users?.name ?? "?").charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-              <span className="text-xs text-slate-500 font-medium">{post.users?.name ?? "ユーザー"}</span>
-            </Link>
+                <span className="text-xs text-slate-400 truncate max-w-[80px]">{post.users?.name ?? "ユーザー"}</span>
+              </Link>
+            </div>
 
             <div className="flex items-center justify-between pt-1">
               <div className="flex items-center gap-3">
