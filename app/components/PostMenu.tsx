@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { Ellipsis, Trash2, Pencil, Share2, Globe, Users, Lock } from "lucide-react";
+import { Ellipsis, Trash2, Pencil, Share2, Globe, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import { supabase } from "@/app/lib/supabaseClient";
 
@@ -20,7 +20,6 @@ type Props = {
 
 const VISIBILITY_OPTIONS: { value: Visibility; label: string; icon: React.ReactNode }[] = [
   { value: "public", label: "全体公開", icon: <Globe size={14} /> },
-  { value: "followers_only", label: "フォロワーのみ", icon: <Users size={14} /> },
   { value: "private", label: "自分のみ", icon: <Lock size={14} /> },
 ];
 

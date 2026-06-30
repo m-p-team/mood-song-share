@@ -25,23 +25,10 @@ function showDesktopNotif(notif: NotificationRecord, settings: NotificationSetti
   if (typeof window === "undefined") return;
   if (Notification.permission !== "granted") return;
   if (!settings?.desktop_enabled) return;
-
-  const { type, actor } = notif;
-  if (type === "like" && !settings.likes_enabled) return;
-  if (type === "comment" && !settings.comments_enabled) return;
-  if (type === "dm" && !settings.dms_enabled) return;
-  if (type === "follow" && !settings.follows_enabled) return;
-
-  const name = actor?.name ?? "ユーザー";
-  const body: Record<string, string> = {
-    like: `${name} があなたの投稿にいいねしました`,
-    comment: `${name} があなたの投稿にコメントしました`,
-    dm: `${name} からDMが届きました`,
-    follow: `${name} があなたをフォローしました`,
-  };
+  if (!settings.likes_enabled) return;
 
   try {
-    new Notification("V-Tuune", { body: body[type] ?? "新しい通知", icon: "/logo.png" });
+    new Notification("V-Tuune", { body: "あなたの投稿にいいねされました", icon: "/logo.png" });
   } catch {}
 }
 
@@ -79,7 +66,6 @@ export function useNotifications(userId: string | null) {
     let cancelled = false;
 
     if (!userId) {
-      // Async to avoid synchronous setState in effect body
       Promise.resolve().then(() => {
         if (!cancelled) setLoading(false);
       });
@@ -88,7 +74,6 @@ export function useNotifications(userId: string | null) {
       };
     }
 
-    // Fetch notifications
     getNotifications(userId).then((data) => {
       if (cancelled) return;
       setNotifications(data);
@@ -108,10 +93,12 @@ export function useNotifications(userId: string | null) {
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
+          const newRecord = payload.new as { id: string; type: string };
+          if (newRecord.type !== "like") return;
           supabase
             .from("notifications")
-            .select("*, actor:users!actor_id(id, name, avatar_url), posts!post_id(id, video_title)")
-            .eq("id", (payload.new as { id: string }).id)
+            .select("*, actor:users!actor_id(id, avatar_url), posts!post_id(id, video_title)")
+            .eq("id", newRecord.id)
             .single()
             .then(({ data }) => {
               if (!data || cancelled) return;

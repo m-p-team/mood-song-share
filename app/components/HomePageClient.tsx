@@ -3,14 +3,14 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, Play, TrendingUp, Clock, Users, ExternalLink, LogIn } from "lucide-react";
+import { Plus, Play, TrendingUp, Clock, ExternalLink, LogIn, User } from "lucide-react";
 import LikeButton from "@/app/components/LikeButton";
 import PostMenu from "@/app/components/PostMenu";
 import MoodBadge from "@/app/components/MoodBadge";
 import ConfirmDeleteModal from "@/app/components/ConfirmDeleteModal";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { supabase } from "@/app/lib/supabaseClient";
-import { getPopularPosts, getFollowingPosts, getOwnPostsClient } from "@/app/lib/postService";
+import { getPopularPosts, getOwnPostsClient } from "@/app/lib/postService";
 import { parseMoods } from "@/app/lib/moods";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
@@ -28,14 +28,14 @@ type Post = {
   created_at_jst: string;
   visibility?: Visibility;
   like_count?: number;
-  users?: { name: string | null; avatar_url: string | null } | null;
+  users?: { avatar_url: string | null } | null;
 };
 
 type Props = {
   posts: Post[];
 };
 
-type Tab = "new" | "popular" | "following";
+type Tab = "new" | "popular";
 
 export default function HomePageClient({ posts: initialPosts }: Props) {
   const { user } = useSupabaseUser();
@@ -45,8 +45,6 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("new");
   const [popularPosts, setPopularPosts] = useState<Post[]>([]);
   const [popularFetched, setPopularFetched] = useState(false);
-  const [followingPosts, setFollowingPosts] = useState<Post[]>([]);
-  const [followingFetched, setFollowingFetched] = useState(false);
   const [ownPosts, setOwnPosts] = useState<Post[]>([]);
 
   const router = useRouter();
@@ -63,7 +61,6 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
     }
   }, [searchParams, router, pathname]);
 
-  // Fetch the current user's own posts (including non-public) client-side
   useEffect(() => {
     if (!user) return;
     getOwnPostsClient(user.id).then((data) => setOwnPosts(data as Post[]));
@@ -78,16 +75,6 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
       .finally(() => { if (!cancelled) setPopularFetched(true); });
     return () => { cancelled = true; };
   }, [activeTab, popularFetched]);
-
-  useEffect(() => {
-    if (activeTab !== "following" || !user || followingFetched) return;
-    let cancelled = false;
-    getFollowingPosts(user.id)
-      .then((data) => { if (!cancelled) setFollowingPosts(data); })
-      .catch(() => toast.error("フォロー中投稿の取得に失敗しました"))
-      .finally(() => { if (!cancelled) setFollowingFetched(true); });
-    return () => { cancelled = true; };
-  }, [activeTab, user, followingFetched]);
 
   const handleDelete = async () => {
     if (!deletePostId) return;
@@ -107,7 +94,6 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
     router.refresh();
   };
 
-  // Merge own posts into the "new" feed (dedup by id, own posts take precedence for visibility)
   const mergedNewPosts = useMemo(() => {
     if (!user || ownPosts.length === 0) return initialPosts;
     const ownIds = new Set(ownPosts.map((p) => p.id));
@@ -119,14 +105,11 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
 
   const getDisplayPosts = () => {
     if (activeTab === "popular") return popularPosts;
-    if (activeTab === "following") return followingPosts;
     return mergedNewPosts.filter((p) => !removedPostIds.has(p.id));
   };
 
   const displayPosts = getDisplayPosts();
-  const isLoading =
-    (activeTab === "popular" && !popularFetched) ||
-    (activeTab === "following" && !followingFetched && !!user);
+  const isLoading = activeTab === "popular" && !popularFetched;
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
@@ -154,31 +137,7 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
           <TrendingUp size={15} />
           人気
         </button>
-        <button
-          onClick={() => setActiveTab("following")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all ${
-            activeTab === "following"
-              ? "bg-linear-to-r from-violet-600 to-purple-500 text-white shadow-sm"
-              : "text-slate-500 hover:text-violet-600"
-          }`}
-        >
-          <Users size={15} />
-          フォロー中
-        </button>
       </div>
-
-      {/* Following tab — not logged in */}
-      {activeTab === "following" && !user && (
-        <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
-          <div className="w-14 h-14 rounded-full bg-violet-100 flex items-center justify-center">
-            <LogIn size={24} className="text-violet-400" />
-          </div>
-          <p className="text-slate-500 text-sm">ログインするとフォロー中の投稿を見られます</p>
-          <Link href="/login" className="text-sm font-medium text-violet-600 hover:underline">
-            ログインする
-          </Link>
-        </div>
-      )}
 
       {/* Loading skeleton */}
       {isLoading && (
@@ -196,14 +155,12 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
       )}
 
       {/* Empty state */}
-      {!isLoading && !(activeTab === "following" && !user) && displayPosts.length === 0 && (
+      {!isLoading && displayPosts.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center space-y-3">
           <div className="w-16 h-16 rounded-full bg-violet-100 flex items-center justify-center text-3xl">
             🎵
           </div>
-          <p className="text-slate-500 text-sm">
-            {activeTab === "following" ? "フォロー中のユーザーの投稿がありません" : "まだ投稿がありません"}
-          </p>
+          <p className="text-slate-500 text-sm">まだ投稿がありません</p>
           {activeTab === "new" && (
             <Link href="/post" className="text-sm font-medium text-violet-600 hover:underline">
               最初の投稿をしてみよう
@@ -213,7 +170,7 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
       )}
 
       {/* Post cards */}
-      {!isLoading && !(activeTab === "following" && !user) && displayPosts.map((post, i) => {
+      {!isLoading && displayPosts.map((post, i) => {
         const currentVisibility = postVisibilities[post.id] ?? (post.visibility as Visibility) ?? "public";
         const isOwner = post.user_id === user?.id;
         const isHidden = currentVisibility !== "public";
@@ -272,7 +229,6 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
                     if (v !== "public" && !isOwner) {
                       setRemovedPostIds((prev) => new Set([...prev, post.id]));
                     }
-                    // Update ownPosts local state
                     setOwnPosts((prev) =>
                       prev.map((p) => (p.id === post.id ? { ...p, visibility: v } : p))
                     );
@@ -287,29 +243,26 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
                   ))}
                 </div>
 
-                {/* User info */}
+                {/* User avatar */}
                 <Link
                   href={`/profile/${post.user_id}`}
-                  className="flex items-center gap-1.5 hover:opacity-70 transition-opacity min-w-0"
+                  className="flex items-center gap-1.5 hover:opacity-70 transition-opacity min-w-0 shrink-0"
                 >
                   <div className="w-5 h-5 rounded-full overflow-hidden shrink-0">
                     {post.users?.avatar_url ? (
                       <Image
                         src={post.users.avatar_url}
-                        alt={post.users.name ?? ""}
+                        alt="投稿者"
                         width={20}
                         height={20}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="w-full h-full bg-violet-100 flex items-center justify-center">
-                        <span className="text-[9px] font-bold text-violet-600">
-                          {(post.users?.name ?? "?").charAt(0).toUpperCase()}
-                        </span>
+                        <User size={10} className="text-violet-400" />
                       </div>
                     )}
                   </div>
-                  <span className="text-xs text-slate-400 truncate max-w-[80px]">{post.users?.name ?? "ユーザー"}</span>
                 </Link>
               </div>
 
@@ -332,6 +285,16 @@ export default function HomePageClient({ posts: initialPosts }: Props) {
           </div>
         );
       })}
+
+      {/* Logged-out prompt */}
+      {!user && displayPosts.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-8 text-center space-y-3">
+          <LogIn size={24} className="text-violet-400" />
+          <Link href="/login" className="text-sm font-medium text-violet-600 hover:underline">
+            ログインする
+          </Link>
+        </div>
+      )}
 
       {/* FAB */}
       <Link

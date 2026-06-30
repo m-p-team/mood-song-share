@@ -14,7 +14,7 @@ export function formatJst(dateStr: string) {
 export async function getPosts() {
   const { data, error } = await supabase
     .from("posts")
-    .select("*, users!user_id(name, avatar_url)")
+    .select("*, users!user_id(avatar_url)")
     .eq("visibility", "public")
     .order("created_at", { ascending: false });
 
@@ -32,7 +32,7 @@ export async function getPosts() {
 export async function getPopularPosts() {
   const { data, error } = await supabase
     .from("posts")
-    .select("*, likes(count), users!user_id(name, avatar_url)")
+    .select("*, likes(count), users!user_id(avatar_url)")
     .eq("visibility", "public")
     .order("created_at", { ascending: false });
 
@@ -50,39 +50,10 @@ export async function getPopularPosts() {
     .sort((a, b) => b.like_count - a.like_count);
 }
 
-export async function getFollowingPosts(userId: string) {
-  const { data: follows } = await supabase
-    .from("follows")
-    .select("following_id")
-    .eq("follower_id", userId);
-
-  if (!follows || follows.length === 0) return [];
-
-  const followingIds = follows.map((f) => f.following_id);
-
-  const { data, error } = await supabase
-    .from("posts")
-    .select("*, likes(count), users!user_id(name, avatar_url)")
-    .in("user_id", followingIds)
-    .in("visibility", ["public", "followers_only"])
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error(error);
-    throw new Error("フォロー中投稿の取得に失敗しました");
-  }
-
-  return data.map((post) => ({
-    ...post,
-    like_count: (post.likes as { count: number }[])?.[0]?.count ?? 0,
-    created_at_jst: formatJst(post.created_at),
-  }));
-}
-
 export async function getPostById(id: string) {
   const { data, error } = await supabase
     .from("posts")
-    .select("*, users!user_id(name, avatar_url)")
+    .select("*, users!user_id(avatar_url)")
     .eq("id", id)
     .single();
 
@@ -116,7 +87,7 @@ export async function getUserPosts(userId: string) {
 export async function getOwnPostsClient(userId: string) {
   const { data, error } = await supabase
     .from("posts")
-    .select("*, users!user_id(name, avatar_url)")
+    .select("*, users!user_id(avatar_url)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
@@ -134,7 +105,7 @@ export async function getOwnPostsClient(userId: string) {
 export async function getUserProfile(userId: string) {
   const { data, error } = await supabase
     .from("users")
-    .select("id, name, email, avatar_url, banner_url")
+    .select("id, avatar_url, banner_url")
     .eq("id", userId)
     .maybeSingle();
 
@@ -146,83 +117,12 @@ export async function getUserProfile(userId: string) {
   return data;
 }
 
-export async function getFollowCounts(userId: string) {
-  const [followersRes, followingRes] = await Promise.all([
-    supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", userId),
-    supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", userId),
-  ]);
-
-  return {
-    followers: followersRes.count ?? 0,
-    following: followingRes.count ?? 0,
-  };
-}
-
-export async function checkIsFollowing(followerId: string, followingId: string) {
-  const { data } = await supabase
-    .from("follows")
-    .select("id")
-    .eq("follower_id", followerId)
-    .eq("following_id", followingId)
-    .maybeSingle();
-
-  return !!data;
-}
-
-export async function followUser(followerId: string, followingId: string) {
-  const { error } = await supabase
-    .from("follows")
-    .insert({ follower_id: followerId, following_id: followingId });
-
-  if (error) throw error;
-}
-
-export async function unfollowUser(followerId: string, followingId: string) {
-  const { error } = await supabase
-    .from("follows")
-    .delete()
-    .eq("follower_id", followerId)
-    .eq("following_id", followingId);
-
-  if (error) throw error;
-}
-
-export async function getFollowers(userId: string) {
-  const { data, error } = await supabase
-    .from("follows")
-    .select("follower_id, users!follower_id(id, name, avatar_url)")
-    .eq("following_id", userId)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error(error);
-    return [];
-  }
-
-  return data.map((row) => row.users as unknown as { id: string; name: string | null; avatar_url: string | null });
-}
-
-export async function getFollowing(userId: string) {
-  const { data, error } = await supabase
-    .from("follows")
-    .select("following_id, users!following_id(id, name, avatar_url)")
-    .eq("follower_id", userId)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error(error);
-    return [];
-  }
-
-  return data.map((row) => row.users as unknown as { id: string; name: string | null; avatar_url: string | null });
-}
-
 // ---------- Likers ----------
 
 export async function getLikers(postId: string) {
   const { data, error } = await supabase
     .from("likes")
-    .select("user_id, users!user_id(id, name, avatar_url)")
+    .select("user_id, users!user_id(id, avatar_url)")
     .eq("post_id", postId)
     .order("created_at", { ascending: false });
 
@@ -231,123 +131,7 @@ export async function getLikers(postId: string) {
     return [];
   }
 
-  return data.map((row) => row.users as unknown as { id: string; name: string | null; avatar_url: string | null });
-}
-
-// ---------- Comments ----------
-
-export async function getComments(postId: string) {
-  const { data, error } = await supabase
-    .from("comments")
-    .select("*, users!user_id(id, name, avatar_url)")
-    .eq("post_id", postId)
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    console.error(error);
-    return [];
-  }
-
-  return data.map((c) => ({
-    ...c,
-    created_at_jst: formatJst(c.created_at),
-  }));
-}
-
-export async function addComment(postId: string, userId: string, content: string) {
-  const { data, error } = await supabase
-    .from("comments")
-    .insert({ post_id: postId, user_id: userId, content })
-    .select("*, users!user_id(id, name, avatar_url)")
-    .single();
-
-  if (error) throw error;
-
-  return { ...data, created_at_jst: formatJst(data.created_at) };
-}
-
-export async function deleteComment(commentId: string) {
-  const { error } = await supabase.from("comments").delete().eq("id", commentId);
-  if (error) throw error;
-}
-
-// ---------- Messages ----------
-
-export async function getConversations(userId: string) {
-  const { data, error } = await supabase
-    .from("messages")
-    .select("*, sender:users!sender_id(id, name, avatar_url), receiver:users!receiver_id(id, name, avatar_url)")
-    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error(error);
-    return [];
-  }
-
-  const seenUsers = new Set<string>();
-  const convos: {
-    otherUser: { id: string; name: string | null; avatar_url: string | null };
-    lastMessage: string;
-    lastAt: string;
-    unread: boolean;
-  }[] = [];
-
-  for (const msg of data) {
-    const isSender = msg.sender_id === userId;
-    const other = (isSender ? msg.receiver : msg.sender) as { id: string; name: string | null; avatar_url: string | null };
-    if (!other || seenUsers.has(other.id)) continue;
-    seenUsers.add(other.id);
-    convos.push({
-      otherUser: other,
-      lastMessage: msg.content,
-      lastAt: formatJst(msg.created_at),
-      unread: !isSender && !msg.read_at,
-    });
-  }
-
-  return convos;
-}
-
-export async function getMessages(userId: string, otherId: string) {
-  const { data, error } = await supabase
-    .from("messages")
-    .select("*, sender:users!sender_id(id, name, avatar_url)")
-    .or(
-      `and(sender_id.eq.${userId},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${userId})`
-    )
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    console.error(error);
-    return [];
-  }
-
-  return data.map((m) => ({
-    ...m,
-    created_at_jst: formatJst(m.created_at),
-  }));
-}
-
-export async function sendMessage(senderId: string, receiverId: string, content: string) {
-  const { data, error } = await supabase
-    .from("messages")
-    .insert({ sender_id: senderId, receiver_id: receiverId, content })
-    .select("*, sender:users!sender_id(id, name, avatar_url)")
-    .single();
-
-  if (error) throw error;
-
-  return { ...data, created_at_jst: formatJst(data.created_at) };
-}
-
-export async function markMessagesRead(senderId: string, receiverId: string) {
-  await supabase
-    .from("messages")
-    .update({ read_at: new Date().toISOString() })
-    .eq("sender_id", senderId)
-    .eq("receiver_id", receiverId)
-    .is("read_at", null);
+  return data.map((row) => row.users as unknown as { id: string; avatar_url: string | null });
 }
 
 // ---------- Playlists ----------
@@ -373,7 +157,7 @@ export async function getPlaylists(userId: string) {
 export async function getPlaylistItems(playlistId: string) {
   const { data, error } = await supabase
     .from("playlist_items")
-    .select("*, posts!post_id(id, video_id, video_title, mood, user_id, users!user_id(name, avatar_url))")
+    .select("*, posts!post_id(id, video_id, video_title, mood, user_id, users!user_id(avatar_url))")
     .eq("playlist_id", playlistId)
     .order("position", { ascending: true });
 
@@ -421,7 +205,7 @@ export async function removeFromPlaylist(playlistId: string, postId: string) {
 
 // ---------- Notifications ----------
 
-export type NotificationType = "like" | "comment" | "dm" | "follow";
+export type NotificationType = "like";
 
 export type NotificationRecord = {
   id: string;
@@ -432,24 +216,22 @@ export type NotificationRecord = {
   read_at: string | null;
   created_at: string;
   created_at_jst: string;
-  actor: { id: string; name: string | null; avatar_url: string | null } | null;
+  actor: { id: string; avatar_url: string | null } | null;
   posts: { id: string; video_title: string } | null;
 };
 
 export type NotificationSettings = {
   user_id: string;
   likes_enabled: boolean;
-  comments_enabled: boolean;
-  dms_enabled: boolean;
-  follows_enabled: boolean;
   desktop_enabled: boolean;
 };
 
 export async function getNotifications(userId: string): Promise<NotificationRecord[]> {
   const { data, error } = await supabase
     .from("notifications")
-    .select("*, actor:users!actor_id(id, name, avatar_url), posts!post_id(id, video_title)")
+    .select("*, actor:users!actor_id(id, avatar_url), posts!post_id(id, video_title)")
     .eq("user_id", userId)
+    .eq("type", "like")
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -475,7 +257,7 @@ export async function markAllNotificationsRead(userId: string) {
 export async function getNotificationSettings(userId: string): Promise<NotificationSettings | null> {
   const { data } = await supabase
     .from("notification_settings")
-    .select("*")
+    .select("user_id, likes_enabled, desktop_enabled")
     .eq("user_id", userId)
     .maybeSingle();
 

@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Heart, User } from "lucide-react";
 import { getLikers } from "@/app/lib/postService";
 
-type UserSummary = { id: string; name: string | null; avatar_url: string | null };
+type UserSummary = { id: string; avatar_url: string | null };
 
 export default function LikersList({ postId }: { postId: string }) {
   const [likers, setLikers] = useState<UserSummary[]>([]);
@@ -43,20 +43,17 @@ export default function LikersList({ postId }: { postId: string }) {
                 {u.avatar_url ? (
                   <Image
                     src={u.avatar_url}
-                    alt={u.name ?? ""}
+                    alt="ユーザー"
                     width={20}
                     height={20}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-rose-200 flex items-center justify-center">
-                    <span className="text-[8px] font-bold text-rose-600">
-                      {(u.name ?? "?").charAt(0).toUpperCase()}
-                    </span>
+                    <User size={10} className="text-rose-500" />
                   </div>
                 )}
               </div>
-              <span className="text-xs text-rose-700 font-medium">{u.name ?? "ユーザー"}</span>
             </Link>
           ))}
           {!expanded && likers.length > 5 && (

@@ -5,13 +5,12 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabaseClient";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { MOODS, serializeMoods } from "@/app/lib/moods";
-import { ArrowLeft, Link2, Music, Search, Globe, Users, Lock } from "lucide-react";
+import { ArrowLeft, Link2, Music, Search, Globe, Lock } from "lucide-react";
 
-type Visibility = "public" | "followers_only" | "private";
+type Visibility = "public" | "private";
 
 const VISIBILITY_OPTIONS: { value: Visibility; label: string; desc: string; icon: React.ReactNode }[] = [
   { value: "public", label: "全体公開", desc: "誰でも見られる", icon: <Globe size={15} /> },
-  { value: "followers_only", label: "フォロワーのみ", desc: "フォロワーだけ見られる", icon: <Users size={15} /> },
   { value: "private", label: "自分のみ", desc: "自分だけ見られる", icon: <Lock size={15} /> },
 ];
 import Link from "next/link";

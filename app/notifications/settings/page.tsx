@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Bell, BellOff, Monitor, Heart, MessageCircle, MessageSquare, UserPlus, Save } from "lucide-react";
+import { ArrowLeft, Bell, BellOff, Monitor, Heart, Save } from "lucide-react";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { useNotifications } from "@/app/lib/useNotifications";
 import {
@@ -17,9 +17,6 @@ const SETTINGS_KEY = "v_tuune_notif_settings";
 
 const defaultSettings: Omit<NotificationSettings, "user_id"> = {
   likes_enabled: true,
-  comments_enabled: true,
-  dms_enabled: true,
-  follows_enabled: true,
   desktop_enabled: false,
 };
 
@@ -86,14 +83,10 @@ export default function NotificationSettingsPage() {
     if (!user) return;
     getNotificationSettings(user.id).then((data) => {
       if (data) {
-        const rest = {
-        likes_enabled: data.likes_enabled,
-        comments_enabled: data.comments_enabled,
-        dms_enabled: data.dms_enabled,
-        follows_enabled: data.follows_enabled,
-        desktop_enabled: data.desktop_enabled,
-      };
-        setSettings(rest);
+        setSettings({
+          likes_enabled: data.likes_enabled,
+          desktop_enabled: data.desktop_enabled,
+        });
       }
       setFetching(false);
     });
@@ -124,7 +117,6 @@ export default function NotificationSettingsPage() {
     setSaving(true);
     try {
       await upsertNotificationSettings(user.id, settings);
-      // Sync to localStorage for the realtime handler
       const full: NotificationSettings = { user_id: user.id, ...settings };
       try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(full)); } catch {}
       updateSettingsCache(full);
@@ -163,7 +155,6 @@ export default function NotificationSettingsPage() {
         </div>
 
         <div className="px-6 divide-y divide-slate-100">
-          {/* In-app notification types */}
           <div className="py-4">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">通知の種類</p>
           </div>
@@ -174,27 +165,6 @@ export default function NotificationSettingsPage() {
             description="自分の投稿にいいねされたとき"
             checked={settings.likes_enabled}
             onChange={(v) => update("likes_enabled", v)}
-          />
-          <ToggleRow
-            icon={<MessageCircle size={16} className="text-violet-500" />}
-            label="コメント"
-            description="自分の投稿にコメントされたとき"
-            checked={settings.comments_enabled}
-            onChange={(v) => update("comments_enabled", v)}
-          />
-          <ToggleRow
-            icon={<MessageSquare size={16} className="text-blue-500" />}
-            label="DM"
-            description="ダイレクトメッセージが届いたとき"
-            checked={settings.dms_enabled}
-            onChange={(v) => update("dms_enabled", v)}
-          />
-          <ToggleRow
-            icon={<UserPlus size={16} className="text-emerald-500" />}
-            label="フォロー"
-            description="フォローされたとき"
-            checked={settings.follows_enabled}
-            onChange={(v) => update("follows_enabled", v)}
           />
 
           {/* Desktop notifications */}
@@ -250,7 +220,7 @@ export default function NotificationSettingsPage() {
 
             {settings.desktop_enabled && desktopPermission === "granted" && (
               <p className="text-xs text-slate-400 pl-12">
-                上で有効にした通知の種類のみデスクトップ通知が届きます
+                いいね通知のみデスクトップ通知が届きます
               </p>
             )}
           </div>

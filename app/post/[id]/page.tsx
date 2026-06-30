@@ -5,12 +5,11 @@ import ExternalLink from "@/app/components/ExternalLink";
 import Player from "@/app/components/Player";
 import Thumbnail from "@/app/components/Thumbnail";
 import LikeButton from "@/app/components/LikeButton";
-import CommentSection from "@/app/components/CommentSection";
 import LikersList from "@/app/components/LikersList";
 import { AddToPlaylistButton } from "@/app/components/PlaylistSection";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, User } from "lucide-react";
 
 type Props = {
   params: Promise<{
@@ -22,8 +21,7 @@ export default async function PostDetailPage({ params }: Props) {
   const { id } = await params;
   const post = await getPostById(id);
 
-  const users = post.users as { name: string | null; avatar_url: string | null } | null;
-  const userName = users?.name ?? "ユーザー";
+  const users = post.users as { avatar_url: string | null } | null;
   const avatarUrl = users?.avatar_url ?? null;
 
   return (
@@ -66,20 +64,18 @@ export default async function PostDetailPage({ params }: Props) {
               {avatarUrl ? (
                 <Image
                   src={avatarUrl}
-                  alt={userName}
+                  alt="投稿者"
                   width={28}
                   height={28}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full bg-violet-100 flex items-center justify-center">
-                  <span className="text-xs font-bold text-violet-600">
-                    {userName.charAt(0).toUpperCase()}
-                  </span>
+                  <User size={14} className="text-violet-400" />
                 </div>
               )}
             </div>
-            <span className="text-sm text-slate-500 font-medium">{userName}</span>
+            <span className="text-sm text-slate-500 font-medium">ユーザー</span>
           </Link>
 
           {/* Actions */}
@@ -97,11 +93,6 @@ export default async function PostDetailPage({ params }: Props) {
           <p className="text-xs text-slate-400">
             投稿日: {new Date(post.created_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}
           </p>
-
-          {/* Comments */}
-          <div className="pt-2 border-t border-slate-100">
-            <CommentSection postId={post.id} />
-          </div>
         </div>
       </div>
 

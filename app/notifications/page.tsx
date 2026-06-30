@@ -3,36 +3,19 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Bell, Settings, Heart, MessageCircle, MessageSquare, UserPlus, ArrowLeft } from "lucide-react";
+import { Bell, Settings, Heart, ArrowLeft, User } from "lucide-react";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { useNotifications } from "@/app/lib/useNotifications";
 import { useRouter } from "next/navigation";
-import type { NotificationRecord, NotificationType } from "@/app/lib/postService";
+import type { NotificationRecord } from "@/app/lib/postService";
 
 function notifHref(n: NotificationRecord): string {
-  if (n.type === "like" || n.type === "comment") return n.post_id ? `/post/${n.post_id}` : "/";
-  if (n.type === "dm") return `/messages/${n.actor_id}`;
-  return `/profile/${n.actor_id}`;
+  return n.post_id ? `/post/${n.post_id}` : "/";
 }
 
 function notifMessage(n: NotificationRecord): string {
-  const name = n.actor?.name ?? "ユーザー";
   const title = n.posts?.video_title ? `「${n.posts.video_title}」` : "投稿";
-  const map: Record<NotificationType, string> = {
-    like: `${name} が${title}にいいねしました`,
-    comment: `${name} が${title}にコメントしました`,
-    dm: `${name} からDMが届きました`,
-    follow: `${name} があなたをフォローしました`,
-  };
-  return map[n.type];
-}
-
-function NotifIcon({ type }: { type: NotificationType }) {
-  const base = "w-5 h-5 rounded-full flex items-center justify-center shrink-0 ring-2 ring-white";
-  if (type === "like") return <div className={`${base} bg-rose-100`}><Heart size={9} className="text-rose-500" /></div>;
-  if (type === "comment") return <div className={`${base} bg-violet-100`}><MessageCircle size={9} className="text-violet-500" /></div>;
-  if (type === "dm") return <div className={`${base} bg-blue-100`}><MessageSquare size={9} className="text-blue-500" /></div>;
-  return <div className={`${base} bg-emerald-100`}><UserPlus size={9} className="text-emerald-500" /></div>;
+  return `${title}にいいねされました`;
 }
 
 export default function NotificationsPage() {
@@ -44,7 +27,6 @@ export default function NotificationsPage() {
     if (!authLoading && !user) router.push("/login");
   }, [user, authLoading, router]);
 
-  // Mark all as read when page is viewed
   useEffect(() => {
     if (user && unreadCount > 0) {
       markRead();
@@ -94,7 +76,7 @@ export default function NotificationsPage() {
               <Bell size={24} className="text-violet-400" />
             </div>
             <p className="text-sm text-slate-500">通知はありません</p>
-            <p className="text-xs text-slate-400">いいね・コメント・DM・フォローで通知が届きます</p>
+            <p className="text-xs text-slate-400">投稿にいいねされると通知が届きます</p>
           </div>
         ) : (
           <ul className="divide-y divide-slate-50">
@@ -112,21 +94,21 @@ export default function NotificationsPage() {
                       {n.actor?.avatar_url ? (
                         <Image
                           src={n.actor.avatar_url}
-                          alt={n.actor.name ?? ""}
+                          alt="ユーザー"
                           width={40}
                           height={40}
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="w-full h-full bg-violet-100 flex items-center justify-center">
-                          <span className="text-sm font-bold text-violet-600">
-                            {(n.actor?.name ?? "?").charAt(0).toUpperCase()}
-                          </span>
+                          <User size={18} className="text-violet-400" />
                         </div>
                       )}
                     </div>
                     <div className="absolute -bottom-1 -right-1">
-                      <NotifIcon type={n.type} />
+                      <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center ring-2 ring-white">
+                        <Heart size={9} className="text-rose-500" />
+                      </div>
                     </div>
                   </div>
 
