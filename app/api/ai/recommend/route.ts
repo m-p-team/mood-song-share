@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
   const { data: posts } = await supabase
     .from("posts")
     .select("id, mood, video_id, video_title")
+    .eq("visibility", "public")
     .order("created_at", { ascending: false })
     .limit(100);
 

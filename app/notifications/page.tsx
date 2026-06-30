@@ -28,11 +28,11 @@ function notifMessage(n: NotificationRecord): string {
 }
 
 function NotifIcon({ type }: { type: NotificationType }) {
-  const base = "w-8 h-8 rounded-full flex items-center justify-center shrink-0";
-  if (type === "like") return <div className={`${base} bg-rose-100`}><Heart size={14} className="text-rose-500" /></div>;
-  if (type === "comment") return <div className={`${base} bg-violet-100`}><MessageCircle size={14} className="text-violet-500" /></div>;
-  if (type === "dm") return <div className={`${base} bg-blue-100`}><MessageSquare size={14} className="text-blue-500" /></div>;
-  return <div className={`${base} bg-emerald-100`}><UserPlus size={14} className="text-emerald-500" /></div>;
+  const base = "w-5 h-5 rounded-full flex items-center justify-center shrink-0 ring-2 ring-white";
+  if (type === "like") return <div className={`${base} bg-rose-100`}><Heart size={9} className="text-rose-500" /></div>;
+  if (type === "comment") return <div className={`${base} bg-violet-100`}><MessageCircle size={9} className="text-violet-500" /></div>;
+  if (type === "dm") return <div className={`${base} bg-blue-100`}><MessageSquare size={9} className="text-blue-500" /></div>;
+  return <div className={`${base} bg-emerald-100`}><UserPlus size={9} className="text-emerald-500" /></div>;
 }
 
 export default function NotificationsPage() {
@@ -125,7 +125,7 @@ export default function NotificationsPage() {
                         </div>
                       )}
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5">
+                    <div className="absolute -bottom-1 -right-1">
                       <NotifIcon type={n.type} />
                     </div>
                   </div>

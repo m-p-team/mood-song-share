@@ -5,11 +5,13 @@ import { Home, Search, PlusCircle, User, MessageSquare, Bell } from "lucide-reac
 import { usePathname } from "next/navigation";
 import { useSupabaseUser } from "@/app/lib/useSupabaseUser";
 import { useNotifications } from "@/app/lib/useNotifications";
+import { useUnreadMessages } from "@/app/lib/useUnreadMessages";
 
 export default function BottomNav() {
   const pathname = usePathname();
   const { user } = useSupabaseUser();
   const { unreadCount } = useNotifications(user?.id ?? null);
+  const unreadMessages = useUnreadMessages(user?.id ?? null);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -19,7 +21,7 @@ export default function BottomNav() {
     { href: "/search", icon: Search, label: "検索", badge: 0 },
     { href: "/post", icon: PlusCircle, label: "投稿", badge: 0 },
     { href: "/notifications", icon: Bell, label: "通知", badge: unreadCount },
-    { href: "/messages", icon: MessageSquare, label: "トーク", badge: 0 },
+    { href: "/messages", icon: MessageSquare, label: "トーク", badge: unreadMessages },
     { href: user ? `/profile/${user.id}` : "/login", icon: User, label: "プロフィール", badge: 0 },
   ];
 

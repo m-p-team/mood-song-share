@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getUserPosts, getUserProfile, getFollowCounts } from "@/app/lib/postService";
 import Link from "next/link";
 import Image from "next/image";

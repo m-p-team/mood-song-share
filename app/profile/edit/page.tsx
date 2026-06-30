@@ -119,21 +119,34 @@ export default function EditProfilePage() {
 
     setSaving(true);
 
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("users")
       .update({ name: name.trim() })
-      .eq("id", user.id);
+      .eq("id", user.id)
+      .select("name")
+      .single();
 
     setSaving(false);
 
     if (error) {
       toast.error("保存に失敗しました");
-      console.error(error);
+      console.error("[profile/edit] update error:", error);
+      return;
+    }
+
+    // If updated.name doesn't match what we sent, a trigger may be overwriting it
+    if (updated?.name !== name.trim()) {
+      console.warn("[profile/edit] name mismatch after save:", {
+        sent: name.trim(),
+        got: updated?.name,
+        userId: user.id,
+      });
+      toast.error("名前の変更がDBに反映されませんでした。Supabaseのトリガーを確認してください。");
       return;
     }
 
     toast.success("プロフィールを更新しました");
-    router.refresh();
+    setOriginalName(name.trim());
     router.push(`/profile/${user.id}`);
   }
 

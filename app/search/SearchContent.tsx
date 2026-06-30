@@ -53,6 +53,7 @@ export default function SearchContent() {
       let query = supabase
         .from("posts")
         .select("id, mood, video_id, video_title, created_at")
+        .eq("visibility", "public")
         .order("created_at", { ascending: false });
 
       if (selectedMood) {
